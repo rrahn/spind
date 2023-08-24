@@ -1,5 +1,5 @@
-import {Box} from './box';
-import {BoxStatus} from './BoxStatus';
+const Box = require ('./box');
+const BoxStatus = require ('./BoxStatus');
 
 module.exports = class Locker {
     id = null;
@@ -13,12 +13,12 @@ module.exports = class Locker {
         this.type = request.body.type;
     }
 
-    constructor(dbRows) {
-        this.id = dbRows.id;
-        this.name = dbRows.locker_num;
-        this.boxList = createBoxes(request.body.boxCount);
-        this.type = request.body.type;
-    }
+    // constructor(dbRows) {
+    //     this.id = dbRows.id;
+    //     this.name = dbRows.locker_num;
+    //     this.boxList = createBoxes(request.body.boxCount);
+    //     this.type = request.body.type;
+    // }
 
     #createBoxes(count) {
         return Array.from({length: count}, (value, index) => index + 1).map(boxNumber => {

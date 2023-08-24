@@ -1,4 +1,8 @@
 // Maybe use css grid style?
+// Here we define the  workbench of the application!
+// We just generate the components and not the functionality
+// This is the prototype for the actual tool!
+
 function App() {
     const { Container, Row, Col } = ReactBootstrap;
     return (
@@ -390,4 +394,4 @@ function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
     );
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+// ReactDOM.render(<App />, document.getElementById('root'));

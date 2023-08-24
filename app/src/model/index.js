@@ -1,1 +1,1 @@
-module.exports = require('./locker', './box', './boxStatus');
+// module.exports = require('./locker', './box', './boxStatus');
