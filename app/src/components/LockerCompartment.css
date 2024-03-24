@@ -1,0 +1,35 @@
+.locker-compartment {
+  display: flex;              /* establish flex container */
+  flex-flow: row nowrap;   /* stack flex items horizontally and forbid wrap */
+  justify-content: flex-start;    /* center items along cross-axis (vertically here) */
+  align-items: center;        /* center items horizontally, in this case */
+  width: 100%;
+  height: 100%;
+  background-color:  rgba(24, 76, 155, 0.892);
+  border-radius: 5px;
+}
+
+.locker-compartment div:first-child {
+  flex: 1 66%;
+  text-align: center;
+}
+.locker-compartment div {
+  flex: 1 33%;
+  font-size: 5em;
+  color: rgb(243, 189, 101);
+}
+
+.locker-compartment div img {
+  width: 75%;
+  max-width: 100%;
+}
+
+/* Styling when hover over available locker compartment */
+
+.locker-compartment:hover {
+  background-color: lightskyblue;  /* change background color */
+}
+
+.locker-compartment:hover div{
+  color: slateblue;  /* change text color */
+}

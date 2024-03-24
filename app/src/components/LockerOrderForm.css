@@ -1,0 +1,28 @@
+.flex-box--column {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+}
+
+.flex-box--row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 30px;
+  color: #f49b1e;
+}
+
+.info-message {
+  font-size: 14.5px;
+  color: rgb(152, 152, 152);
+}
+

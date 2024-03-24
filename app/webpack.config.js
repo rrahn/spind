@@ -10,7 +10,8 @@ module.exports = {
     entry: './src/index.js',
     output: {
         path: path.join(__dirname, '/dist'),
-        filename: 'bundle.[fullhash].js'
+        filename: 'bundle.[fullhash].js',
+        clean: true,
     },
     devtool: 'inline-source-map',
     plugins: [
@@ -62,11 +63,25 @@ module.exports = {
           }
         },
         {
+          test: /\.(ts|tsx)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "ts-loader"
+          }
+        },
+        {
             test: /\.(css)$/,
             exclude: /node_modules/,
             use: [MiniCssExtractPlugin.loader, "css-loader"]
         },
+        {
+          test: /\.(png|svg|jpg|jpeg|gif)$/i,
+          type: 'asset/resource',
+        }
       ]
+    },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
     },
     devServer: {
         host: '0.0.0.0',
