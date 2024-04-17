@@ -10,10 +10,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const DefaultTest = {
+export const KeyLockerTest : Story = {
     args: {
         id: 10,
         lockerType: 'key',
-        lockerCapacity: 9,
     },
-} satisfies Story;
+};
+
+export const DigitLockerTest : Story = {
+    args: {
+        ...KeyLockerTest.args,
+        lockerType: 'digit',
+    },
+};
