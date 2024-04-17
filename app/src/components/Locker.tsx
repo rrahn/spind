@@ -7,18 +7,19 @@ interface LockerProps {
   id: number;
   /** Type of the locker*/
   lockerType: string;
-  /** The number of compartments of the locker */
-  lockerCapacity: number;
 }
 
-export default function Locker({id, lockerType, lockerCapacity}: LockerProps) {
+export default function Locker({id, lockerType}: LockerProps) {
 
-  const LockerCompartments = [...Array(lockerCapacity).keys()].map(idx => ++idx).map((n) => {
+  const lockerCapacity = lockerType === 'key' ? 9 : 10;
+  const LockerCompartments = [...Array(lockerCapacity).keys()]
+                                .map(idx => ++idx)
+                                .map((n) => {
     return <LockerCompartment number={n} lockType={lockerType}/>;
   });
 
   return (
-    <div className='locker'>
+    <div className={'locker' + ' ' + lockerType}>
       <div className='grid-container'>
         {LockerCompartments}
       </div>
