@@ -5,19 +5,32 @@
   justify-content: center; /* center child elements vertically (along main-axis) */
   align-items: center; /* center child elements horizontally (along cross-axis) */
   row-gap: 0.6em; /* space between compartment elements and id of locker */
-  max-width: 300px; /* maximum width of the locker */
   padding: 0.6em; /* padding around the locker representing metal case */
   background:linear-gradient(70deg, rgb(163, 163, 163), #eee, rgb(163, 163, 163)); /* styling metal case of the locker */
   border-radius: 0.1em;
 }
 
-.locker .grid-container {
+.locker.key {
+  max-width: 300px; /* maximum width of the locker */
+}
+
+.locker.digit {
+  max-width: 200px; /* maximum width of the locker */
+}
+
+.locker.key > .grid-container {
   display: grid; /* establish grid container to arrange compartments */
   grid-template-columns: repeat(3, minmax(90px, 1fr)); /* 3 columns with equal width */
   gap: 0.2em;
 }
 
-.locker .locker-id {
+.locker.digit > .grid-container {
+  display: grid; /* establish grid container to arrange compartments */
+  grid-template-columns: repeat(2, minmax(90px, 1fr)); /* 2 columns with equal width */
+  gap: 0.2em;
+}
+
+.locker > .locker-id {
   font-size: 2.5em; /* font size of the locker id */
   font-weight: bold; /* bold font weight of the locker id */
   color: rgb(75, 75, 75); /* color of the locker id */

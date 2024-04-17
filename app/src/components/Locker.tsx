@@ -18,7 +18,7 @@ export default function Locker({id, lockerType, lockerCapacity}: LockerProps) {
   });
 
   return (
-    <div className='locker'>
+    <div className={'locker' + ' ' + lockerType}>
       <div className='grid-container'>
         {LockerCompartments}
       </div>
