@@ -1,35 +1,77 @@
+
+/*
+  Styling of the locker compartment
+*/
 .locker-compartment {
-  display: flex;              /* establish flex container */
-  flex-flow: row nowrap;   /* stack flex items horizontally and forbid wrap */
-  justify-content: flex-start;    /* center items along cross-axis (vertically here) */
-  align-items: center;        /* center items horizontally, in this case */
-  width: 100%;
-  height: 100%;
-  background-color:  rgba(24, 76, 155, 0.892);
-  border-radius: 5px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  background-color: rgb(75, 172, 235);
+  color: rgb(103, 235, 213);
+  height: auto;
+  border: 0.05em solid rgb(75, 75, 75);
+  border-radius: 0.1em;
 }
 
-.locker-compartment div:first-child {
-  flex: 1 66%;
-  text-align: center;
-}
-.locker-compartment div {
-  flex: 1 33%;
-  font-size: 5em;
-  color: rgb(243, 189, 101);
+/* Make the displayed box quadratic by taking up all horizontal space that corresponds to the width of the parent object */
+.locker-compartment::before {
+  content: "";
+  padding-bottom: 100%; /* 1:1 Aspect Ratio – quadratic */
+  display: block;
 }
 
-.locker-compartment div img {
-  width: 75%;
-  max-width: 100%;
+/* Let the button take up the entire grid cell by overlapping with the pseudo-element .locker-compartment::before */
+.locker-compartment::before,
+.locker-compartment > button
+{
+  grid-area: 1 / 1 / 2 / 2;   /* span the entire grid which has only one cell */
 }
 
-/* Styling when hover over available locker compartment */
-
-.locker-compartment:hover {
-  background-color: lightskyblue;  /* change background color */
+/*
+  Styling of the button
+*/
+.locker-compartment > button {
+  display: inline-block;
+  position: relative; /* make the button a positioned element */
+  width: 100%; /* take up the entire width of the grid cell */
+  height: 100%; /* take up the entire height of the grid cell */
+  /* font-size: 4em; */
+  background-color: transparent;
+  color: rgb(75, 75, 75);
+  border: none; /* display as flat area */
+  overflow: hidden;
+  transition-duration: 0.5s;
+  /* transition: background-color 0.5s; smooth transition of background color */
 }
 
-.locker-compartment:hover div{
-  color: slateblue;  /* change text color */
+
+.locker-compartment > button:hover {
+  background-image: radial-gradient(circle, rgb(75, 272, 235, 0.1), rgb(150, 232, 245, 0.2), rgb(150, 232, 245, 0.75));
+  /* font-size: 5em; */
+  font-weight: bold;
+}
+
+/*
+  Styling of the button content
+*/
+.locker-compartment > button > .button-content {
+  display: flex;    /* establish flex container */
+  align-items: center; /* center items vertically */
+  justify-content: center; /* center items horizontally */
+}
+
+.locker-compartment > button > .button-content > span {
+  flex: 1;
+  font-size: 3em;
+}
+
+.locker-compartment > button > .button-content > img {
+  /* width: 50px; Fixed width for the image */
+  /* height: auto; Maintain aspect ratio */
+  max-width: 25%; /* Adjust the maximum width of the image relative to the button content */
+  max-height: 25%; /* Adjust the maximum height of the image relative to the button content */
+  width: auto;
+  height: auto;
+  margin-left: 10px; /* Adjust margin as needed */
+  margin-right: 10px;
 }
