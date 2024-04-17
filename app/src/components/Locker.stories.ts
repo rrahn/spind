@@ -12,6 +12,8 @@ type Story = StoryObj<typeof meta>;
 
 export const DefaultTest = {
     args: {
-        id: '1.4',
+        id: 10,
+        lockerType: 'key',
+        lockerCapacity: 9,
     },
 } satisfies Story;
