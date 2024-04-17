@@ -1,35 +1,28 @@
 import React from 'react';
 import LockerCompartment from './LockerCompartment';
+import './Locker.css';
 
 interface LockerProps {
   /** A unique identifier to describe the locker */
-  id: string;
-  lockerCompartments: typeof LockerCompartment[];
+  id: number;
+  /** Type of the locker*/
+  lockerType: string;
+  /** The number of compartments of the locker */
+  lockerCapacity: number;
 }
 
-export default function Locker({id}: LockerProps) {
-  const lockerNumber = id.split('.')[0];
-  const lockerBox = id.split('.')[1];
+export default function Locker({id, lockerType, lockerCapacity}: LockerProps) {
+
+  const LockerCompartments = [...Array(lockerCapacity).keys()].map(idx => ++idx).map((n) => {
+    return <LockerCompartment number={n} lockType={lockerType}/>;
+  });
+
   return (
-    <div className={`locker-summary`}>
-      <label htmlFor="locker-number" aria-label={`locker-${id}`} className="locker-id">Schrank:
-        <input
-          type="text"
-          value={`${lockerNumber}`}
-          readOnly={true}
-          name="locker-number"
-          placeholder="Locker ID"
-        />
-      </label>
-      <label htmlFor="locker-box" aria-label={`locker-${id}`} className="locker-id">Fach:
-        <input
-          type="text"
-          value={lockerBox}
-          readOnly={true}
-          name="locker-box"
-          placeholder="Locker Box"
-        />
-      </label>
+    <div className='locker'>
+      <div className='grid-container'>
+        {LockerCompartments}
+      </div>
+      <span className='locker-id'>{id}</span>
     </div>
   );
 }

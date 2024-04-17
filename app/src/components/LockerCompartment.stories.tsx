@@ -6,7 +6,7 @@ const meta: Meta<typeof LockerCompartment> = {
   component: LockerCompartment,
   decorators: [
     (Story) => (
-      <div style={{ width: '150px', height: '150px' }}>
+      <div style={{ width: '100px'}}>
         <Story />
       </div>
     ),
