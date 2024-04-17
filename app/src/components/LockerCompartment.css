@@ -1,7 +1,7 @@
 
-/*
-  Styling of the locker compartment
-*/
+/* **************************************************************************************************** */
+/*  Styling of the locker compartment                                                                   */
+/* **************************************************************************************************** */
 .locker-compartment {
   display: grid;
   align-items: center;
@@ -27,9 +27,9 @@
   grid-area: 1 / 1 / 2 / 2;   /* span the entire grid which has only one cell */
 }
 
-/*
-  Styling of the button
-*/
+/* **************************************************************************************************** */
+/* Styling of the button                                                                                */
+/* **************************************************************************************************** */
 .locker-compartment > button {
   display: inline-block;
   position: relative; /* make the button a positioned element */
@@ -44,16 +44,21 @@
   /* transition: background-color 0.5s; smooth transition of background color */
 }
 
-
-.locker-compartment > button:hover {
+/* Styling of the button when hovered and as long it is enabled. */
+.locker-compartment > button:hover:enabled {
   background-image: radial-gradient(circle, rgb(75, 272, 235, 0.1), rgb(150, 232, 245, 0.2), rgb(150, 232, 245, 0.75));
-  /* font-size: 5em; */
   font-weight: bold;
 }
 
-/*
-  Styling of the button content
-*/
+/* Styling of disabled button */
+.locker-compartment > button:disabled {
+  background-color: rgb(200, 200, 200);
+  cursor: not-allowed;
+}
+
+/* **************************************************************************************************** */
+/* Styling of the button content                                                                        */
+/* **************************************************************************************************** */
 .locker-compartment > button > .button-content {
   display: flex;    /* establish flex container */
   align-items: center; /* center items vertically */
