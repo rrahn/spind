@@ -41,7 +41,6 @@
   border: none; /* display as flat area */
   overflow: hidden;
   transition-duration: 0.5s;
-  /* transition: background-color 0.5s; smooth transition of background color */
 }
 
 /* Styling of the button when hovered and as long it is enabled. */
