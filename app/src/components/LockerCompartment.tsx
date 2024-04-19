@@ -7,6 +7,14 @@ export const enum LockerCompartmentState {
   SELECTED
 }
 
+/**
+ * The id used to identify a locker compartment globally.
+ */
+export type LockerId = {
+  locker: number;
+  compartment: number;
+}
+
 interface LockerCompartmentProps {
   /** The locker compartment number */
   number: number;

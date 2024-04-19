@@ -1,5 +1,5 @@
 import React from 'react';
-import LockerCompartment from './LockerCompartment';
+import LockerCompartment, { LockerId } from './LockerCompartment';
 import './Locker.css';
 
 interface LockerProps {
@@ -11,7 +11,7 @@ interface LockerProps {
 
 export default function Locker({id, lockerType}: LockerProps) {
 
-  const [selectedCompartmentId, setSelectedCompartmentId] = React.useState(0);
+  const [selectedCompartmentId, setSelectedCompartmentId] = React.useState<LockerId | null>(null);
 
   /**
    * Handles the selection of a compartment
@@ -19,7 +19,7 @@ export default function Locker({id, lockerType}: LockerProps) {
    * @returns void
    **/
   function handleCompartmentSelection(compartmentId: number) {
-    setSelectedCompartmentId(compartmentId);
+    setSelectedCompartmentId({locker: id, compartment: compartmentId});
   }
 
   // Create the locker compartments from the locker capacity.
@@ -32,7 +32,7 @@ export default function Locker({id, lockerType}: LockerProps) {
               number={n}
               lockType={lockerType}
               isAvailable={true}
-              isSelected={n === selectedCompartmentId}
+              isSelected={n === selectedCompartmentId?.compartment}
               onClick={handleCompartmentSelection}/>;
   });
 
