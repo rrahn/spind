@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import ImageMapper from 'react-img-mapper';
+import ImageMapper, { AreaEvent, CustomArea } from 'react-img-mapper';
+import Locker from './Locker';
+import LockerModalDialog from './LockerModalDialog';
 
 import "./FloorPlan.css";
 
@@ -32,9 +34,9 @@ export default function FloorPlan({image, ...props} : FloorPlanProps) {
     name: "floor-plan",
     areas: coordinates.map((area, idx) => {
         return {
-          "title": `Locker ${idx + 1}`,
+          "title": "Locker ${idx + 1}",
           "shape": "rect",
-          "name": `locker ${idx + 1}`,
+          "name": "locker ${idx + 1}",
           "fillColor": "#eab54d4d",
           "strokeColor": "black",
           "coords": area,
@@ -42,6 +44,7 @@ export default function FloorPlan({image, ...props} : FloorPlanProps) {
       }),
   };
 
+  const [selectedLocker, setSelectedLocker] = useState<number>(0);
   const [floorPlanWidth, setFloorPlanWidth] = useState(0);
   const ref = useRef<HTMLHeadingElement>(null);
 
@@ -52,7 +55,22 @@ export default function FloorPlan({image, ...props} : FloorPlanProps) {
 
   return (
     <div className='map-container' ref={ref}>
-      <ImageMapper src={image} map={imageMap} responsive={true} parentWidth={floorPlanWidth} />
+      <ImageMapper
+        src={image}
+        map={imageMap}
+        responsive={true}
+        parentWidth={floorPlanWidth}
+        onClick={(area: CustomArea, index: number) => {
+          console.log(area, index);
+          setSelectedLocker(index + 1);
+        }}/>
+      {/* Show modal when selected Locker is greater than 0 */
+        <LockerModalDialog
+          openModal={selectedLocker > 0}
+          closeModal={() => setSelectedLocker(0)}
+          children={<Locker key={selectedLocker} id={selectedLocker} lockerType="key"/>}
+        />
+      }
     </div>
   );
 }
