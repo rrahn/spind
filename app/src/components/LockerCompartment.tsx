@@ -3,9 +3,8 @@ import React from "react";
 import "./LockerCompartment.css";
 
 export const enum LockerCompartmentState {
-  FREE,
-  RESERVED,
-  ASSIGNED,
+  AVAILABLE,
+  SELECTED
 }
 
 interface LockerCompartmentProps {
@@ -13,16 +12,23 @@ interface LockerCompartmentProps {
   number: number;
   /** The locker compartment lock type */
   lockType: string;
-  /** The state of the compartment */
-  state?: LockerCompartmentState;
+  /** The locker compartment availability state */
+  isAvailable: boolean;
+  /** The locker compartment selected state */
+  isSelected: boolean;
+  /** The locker compartment click event handler */
+  onClick: (n: number) => void;
 }
 
-export default function LockerCompartment({number, lockType, state = LockerCompartmentState.FREE}: LockerCompartmentProps) {
-  const lockImage = "./" + lockType + "-lock.png";
-  return (
+export default function LockerCompartment({number, lockType, isAvailable, isSelected, onClick}: LockerCompartmentProps) {
 
+  const lockImage = "./" + lockType + "-lock.png";
+
+  return (
     <div className={"locker-compartment"}>
-      <button disabled={state != LockerCompartmentState.FREE}>
+      <button className={"locker-button" + (isSelected ? " selected" : "")}
+        disabled={ !isAvailable}
+        onClick={() => onClick(number)}>
         <div className="button-content">
           <span>{number}</span>
           <img src={lockImage}/>
