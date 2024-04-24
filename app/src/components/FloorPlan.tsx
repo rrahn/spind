@@ -7,11 +7,15 @@ import "./FloorPlan.css";
 
 
 export interface FloorPlanProps {
+  /** The index of the floor plan */
+  idx: number;
   /** The image of the floor plan */
   image: string;
+  /** Whether this floor plan is selected and shall be displayed */
+  isSelected: boolean;
 }
 
-export default function FloorPlan({image, ...props} : FloorPlanProps) {
+export default function FloorPlan({idx, image, isSelected} : FloorPlanProps) {
 
   const coordinates = [
     [63,848,204,904],
@@ -31,35 +35,41 @@ export default function FloorPlan({image, ...props} : FloorPlanProps) {
   ];
 
   const imageMap = {
-    name: "floor-plan",
+    name: "floor-plan-" + idx.toString(),
     areas: coordinates.map((area, idx) => {
         return {
-          "title": "Locker ${idx + 1}",
           "shape": "rect",
-          "name": "locker ${idx + 1}",
-          "fillColor": "#eab54d4d",
-          "strokeColor": "black",
+          "fillColor": "rgb(244, 155, 30)",
+          "strokeColor": "rgb(0, 0, 0, 0.1)",
+          "lineWidth": 0.1,
           "coords": area,
+          "preFillColor": "rgb(38, 180, 184, 0.5)",
+          // Following states need to be set based on how many compartments are available
+          // "active": false,
+          // "disabled": true,
         };
       }),
   };
 
   const [selectedLocker, setSelectedLocker] = useState<number>(0);
-  const [floorPlanWidth, setFloorPlanWidth] = useState(0);
-  const ref = useRef<HTMLHeadingElement>(null);
+  const [parentWidth, setParentWidth] = useState(0);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('width', ref.current ? ref.current.offsetWidth : 0);
-    setFloorPlanWidth(ref.current ? ref.current.offsetWidth : 0);
-  }, [ref.current]);
+    setParentWidth(parentRef.current  ? parentRef.current.offsetWidth : 0);
+    console.log('Call effect with ' + parentWidth + ' setting new parentWidth to ' + parentRef.current?.offsetWidth);
+  }, [parentRef.current?.offsetWidth]);
+
+  console.log('Render floor: ' + idx + ' with parentWidth: ' + parentWidth);
 
   return (
-    <div className='map-container' ref={ref}>
+    <div ref={parentRef} key={idx} className={isSelected ? "floor-image" : "floor-image floor-image--hidden"} >
       <ImageMapper
+        key={idx}
         src={image}
         map={imageMap}
         responsive={true}
-        parentWidth={floorPlanWidth}
+        parentWidth={parentWidth}
         onClick={(area: CustomArea, index: number) => {
           console.log(area, index);
           setSelectedLocker(index + 1);
