@@ -18,8 +18,9 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
     <div>
       <select
         className={"select-grade-" + selectedGrade}
-        id="select-grade"
-        name="class-input"
+        id="input-class"
+        data-testid="input-class"
+        name="input-class"
         value={selectedGrade}
         onChange={e => onSelectGrade(e.target.value)}
       >
