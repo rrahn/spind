@@ -29,6 +29,7 @@ export default function Locker({id, lockerType}: LockerProps) {
                                 .map(idx => ++idx)
                                 .map((n) => {
     return <LockerCompartment
+              key={n}
               number={n}
               lockType={lockerType}
               isAvailable={true}

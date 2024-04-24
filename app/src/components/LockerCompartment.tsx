@@ -33,7 +33,7 @@ export default function LockerCompartment({number, lockType, isAvailable, isSele
   const lockImage = "./" + lockType + "-lock.png";
 
   return (
-    <div className={"locker-compartment"}>
+    <div key={number} className={"locker-compartment"}>
       <button className={"locker-button" + (isSelected ? " selected" : "")}
         disabled={ !isAvailable}
         onClick={() => onClick(number)}>
