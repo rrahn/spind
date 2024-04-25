@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
-import ImageMapper, { AreaEvent, CustomArea } from 'react-img-mapper';
+import { useContext, useEffect, useRef, useState } from "react";
+import ImageMapper, { CustomArea } from 'react-img-mapper';
 import Locker from './Locker';
 import LockerModalDialog from './LockerModalDialog';
 
 import "./FloorPlan.css";
 import { FloorPlanModel } from "../model/FloorPlanModel";
 import { LockerModel, LockingMechanism } from "../model/LockerModel";
+import { LockerSelectionContext } from "../contexts/LockerSelectionContext";
 
 
 export interface FloorPlanProps {
@@ -17,16 +18,19 @@ export interface FloorPlanProps {
 
 export default function FloorPlan({floorPlan, isSelected} : FloorPlanProps) {
 
+  const currentLocker = useContext(LockerSelectionContext);
+
   const imageMap = {
     name: floorPlan.title,
     areas: floorPlan.lockers.map((locker) => {
+        let selectedPrefillColor = (currentLocker.locker === locker.id) ? "rgb(244, 155, 30, 0.4)" : "rgb(38, 180, 184, 0.5)";
         return {
           "shape": "rect",
           "fillColor": "rgb(244, 155, 30)",
           "strokeColor": "rgb(0, 0, 0, 0.1)",
           "lineWidth": 0.1,
           "coords": locker.area,
-          "preFillColor": "rgb(38, 180, 184, 0.5)",
+          "preFillColor": selectedPrefillColor,
           // Following states need to be set based on how many compartments are available
           // "active": false,
           // "disabled": true,
