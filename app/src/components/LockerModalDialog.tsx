@@ -25,6 +25,7 @@ export default function LockerModalDialog({ openModal, closeModal, children } : 
     } else {
       dialogRef.current?.close(); // close dialog in all other cases
     }
+    return () => dialogRef.current?.close(); // cleanup
   }, [openModal]);
 
   return (
