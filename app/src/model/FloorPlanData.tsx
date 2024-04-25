@@ -144,12 +144,12 @@ const floor1: FloorPlanModel = {
     } as LockerModel,
     {
       id: 13,
-      kind: LockingMechanism.COMBINATION,
+      kind: LockingMechanism.KEY,
       area: areas[11],
     } as LockerModel,
     {
       id: 30,
-      kind: LockingMechanism.COMBINATION,
+      kind: LockingMechanism.KEY,
       area: areas[13],
     } as LockerModel,
   ],
