@@ -1,6 +1,7 @@
 import React from "react";
 
 import "./LockerCompartment.css";
+import { LockingMechanism } from "../model/LockerModel";
 
 export const enum LockerCompartmentState {
   AVAILABLE,
@@ -19,7 +20,7 @@ interface LockerCompartmentProps {
   /** The locker compartment number */
   number: number;
   /** The locker compartment lock type */
-  lockType: string;
+  lockType: LockingMechanism;
   /** The locker compartment availability state */
   isAvailable: boolean;
   /** The locker compartment selected state */
@@ -31,6 +32,7 @@ interface LockerCompartmentProps {
 export default function LockerCompartment({number, lockType, isAvailable, isSelected, onClick}: LockerCompartmentProps) {
 
   const lockImage = "./" + lockType + "-lock.png";
+  console.log('lockType: ' + lockType);
 
   return (
     <div key={number} className={"locker-compartment"}>

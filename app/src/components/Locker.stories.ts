@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import Locker from "./Locker";
+import { LockingMechanism } from '../model/LockerModel';
 
 const meta = {
     title: 'Base/Locker',
@@ -13,13 +14,13 @@ type Story = StoryObj<typeof meta>;
 export const KeyLockerTest : Story = {
     args: {
         id: 10,
-        lockerType: 'key',
+        lockType: LockingMechanism.KEY,
     },
 };
 
 export const DigitLockerTest : Story = {
     args: {
         ...KeyLockerTest.args,
-        lockerType: 'digit',
+        lockType: LockingMechanism.COMBINATION,
     },
 };

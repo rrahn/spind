@@ -5,7 +5,7 @@
   justify-content: center;
   align-items: center;
   width: 800px;
-  height: 302px; /* Set fixed height of the carousel for the moment to counteract glitch when rendering new floor map. */
+  height: auto;
 }
 
 .floor-carousel > span {

@@ -1,3 +1,4 @@
+import { LockingMechanism } from "../model/LockerModel";
 import LockerCompartment from "./LockerCompartment";
 import { LockerCompartmentState } from "./LockerCompartment";
 import { Meta, StoryObj } from "@storybook/react";
@@ -21,7 +22,7 @@ type Story = StoryObj<typeof LockerCompartment>;
 export const AvailableCompartmentTest: Story = {
   args: {
     number: 5,
-    lockType: "key",
+    lockType: LockingMechanism.KEY,
     isAvailable: true,
     isSelected: false,
     onClick: (n: number) => console.log(n),

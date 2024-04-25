@@ -4,45 +4,28 @@ import Locker from './Locker';
 import LockerModalDialog from './LockerModalDialog';
 
 import "./FloorPlan.css";
+import { FloorPlanModel } from "../model/FloorPlanModel";
+import { LockerModel, LockingMechanism } from "../model/LockerModel";
 
 
 export interface FloorPlanProps {
-  /** The index of the floor plan */
-  idx: number;
-  /** The image of the floor plan */
-  image: string;
-  /** Whether this floor plan is selected and shall be displayed */
+  /** The floor plan */
+  floorPlan: FloorPlanModel;
+  /** Whether this floor plan is selected and shall be shown */
   isSelected: boolean;
 }
 
-export default function FloorPlan({idx, image, isSelected} : FloorPlanProps) {
-
-  const coordinates = [
-    [63,848,204,904],
-    [214,850,358,904],
-    [624,416,677,557],
-    [694,395,842,452],
-    [859,417,913,558],
-    [973,415,1030,560],
-    [1050,395,1194,452],
-    [1211,414,1268,558],
-    [1507,416,1564,560],
-    [1581,392,1725,449],
-    [1745,413,1802,558],
-    [1859,412,1917,560],
-    [1937,397,2081,450],
-    [2098,415,2158,556],
-  ];
+export default function FloorPlan({floorPlan, isSelected} : FloorPlanProps) {
 
   const imageMap = {
-    name: "floor-plan-" + idx.toString(),
-    areas: coordinates.map((area, idx) => {
+    name: floorPlan.title,
+    areas: floorPlan.lockers.map((locker) => {
         return {
           "shape": "rect",
           "fillColor": "rgb(244, 155, 30)",
           "strokeColor": "rgb(0, 0, 0, 0.1)",
           "lineWidth": 0.1,
-          "coords": area,
+          "coords": locker.area,
           "preFillColor": "rgb(38, 180, 184, 0.5)",
           // Following states need to be set based on how many compartments are available
           // "active": false,
@@ -51,34 +34,46 @@ export default function FloorPlan({idx, image, isSelected} : FloorPlanProps) {
       }),
   };
 
-  const [selectedLocker, setSelectedLocker] = useState<number>(0);
+  const [selectedArea, setSelectedArea] = useState<number | null>(null);
   const [parentWidth, setParentWidth] = useState(0);
   const parentRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Set the parent width when the component is mounted and when the current floor is selected by the parent component.
+   * Setting the parent width as a state to cause another render, this time with the correct parent width.
+   * When the component mounts the DOM element does not exist yet, so the parent width is set to 0.
+   * The parent width is set also to 0 when the floor is not selected.
+   *
+   * @returns void
+   */
   useEffect(() => {
-    setParentWidth(parentRef.current  ? parentRef.current.offsetWidth : 0);
-    console.log('Call effect with ' + parentWidth + ' setting new parentWidth to ' + parentRef.current?.offsetWidth);
-  }, [parentRef.current?.offsetWidth]);
+    setParentWidth((parentRef.current && isSelected) ? parentRef.current.offsetWidth : 0);
+    console.log('Call effect with ' + parentWidth + ' setting new parentWidth to ' + parentRef.current?.offsetWidth + " for floor " + floorPlan.title);
+    return () => setParentWidth(0);
+  }, [isSelected]);
 
-  console.log('Render floor: ' + idx + ' with parentWidth: ' + parentWidth);
+  let selectedLocker = { id: -1, kind: LockingMechanism.KEY, area: [0, 0, 0, 0] } as LockerModel;
+  if (selectedArea !== null) {
+    selectedLocker = floorPlan.lockers[selectedArea];
+  }
 
   return (
-    <div ref={parentRef} key={idx} className={isSelected ? "floor-image" : "floor-image floor-image--hidden"} >
+    <div ref={parentRef} key={floorPlan.level} className={isSelected ? "floor-image" : "floor-image floor-image--hidden"} >
       <ImageMapper
-        key={idx}
-        src={image}
+        key={floorPlan.level}
+        src={floorPlan.image}
         map={imageMap}
         responsive={true}
         parentWidth={parentWidth}
         onClick={(area: CustomArea, index: number) => {
           console.log(area, index);
-          setSelectedLocker(index + 1);
+          setSelectedArea(index);
         }}/>
-      {/* Show modal when selected Locker is greater than 0 */
+      {/* Show modal when an area on the image map was selected. */
         <LockerModalDialog
-          openModal={selectedLocker > 0}
-          closeModal={() => setSelectedLocker(0)}
-          children={<Locker key={selectedLocker} id={selectedLocker} lockerType="key"/>}
+          openModal={selectedArea !== null}
+          closeModal={() => setSelectedArea(null)}
+          children={<Locker key={selectedArea} id={selectedLocker.id} lockType={selectedLocker.kind}/>}
         />
       }
     </div>

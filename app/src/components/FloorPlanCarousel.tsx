@@ -32,12 +32,8 @@ export default function FloorPlanCarousel() {
       <p>FloorPlanCarousel</p>
       <div className="floor-carousel">
         {
-          <FloorPlan key={selectedFloorIdx}
-                     image={FloorPlanData[selectedFloorIdx].src}
-                     idx={selectedFloorIdx}
-                     isSelected={true}/>
-          // FloorPlanData.map((image, idx) =>
-          //   <FloorPlan key={idx} image={image.src} idx={idx} isSelected={selectedFloorIdx === idx}/>)
+          FloorPlanData.map((floorPlan, idx) =>
+            <FloorPlan key={floorPlan.level} floorPlan={floorPlan} isSelected={selectedFloorIdx === idx}/>)
         }
         <div className="floor-carousel__nav">
             <CiSquareChevUp className={buttonUpClass}
@@ -45,7 +41,7 @@ export default function FloorPlanCarousel() {
             <CiSquareChevDown className={buttonDownClass}
                               onClick={handleClickNavDown}/>
         </div>
-        <span>{FloorPlanData[selectedFloorIdx].alt}</span>
+        <span>{FloorPlanData[selectedFloorIdx].title}</span>
       </div>
     </div>
   )
