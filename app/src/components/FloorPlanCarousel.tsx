@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import {CiSquareChevUp, CiSquareChevDown} from 'react-icons/ci';
 
 import './FloorPlanCarousel.css';
 import { FloorPlanData } from "../model/FloorPlanData";
 import FloorPlan from './FloorPlan';
-import e from 'express';
-
+import { LockerSelectionProvider } from '../contexts/LockerSelectionContext';
 
 export default function FloorPlanCarousel() {
 
@@ -31,10 +30,12 @@ export default function FloorPlanCarousel() {
     <div>
       <p>FloorPlanCarousel</p>
       <div className="floor-carousel">
-        {
-          FloorPlanData.map((floorPlan, idx) =>
-            <FloorPlan key={floorPlan.level} floorPlan={floorPlan} isSelected={selectedFloorIdx === idx}/>)
-        }
+        <LockerSelectionProvider>
+          {
+            FloorPlanData.map((floorPlan, idx) =>
+              <FloorPlan key={floorPlan.level} floorPlan={floorPlan} isSelected={selectedFloorIdx === idx}/>)
+          }
+        </LockerSelectionProvider>
         <div className="floor-carousel__nav">
             <CiSquareChevUp className={buttonUpClass}
                             onClick={handleClickNavUp}/>

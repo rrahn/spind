@@ -1,7 +1,8 @@
-import React from 'react';
+import { useContext, useState } from 'react';
 import LockerCompartment, { LockerId } from './LockerCompartment';
 import './Locker.css';
 import { LockingMechanism } from '../model/LockerModel';
+import { LockerSelectionContext, LockerSelectionDispatchContext } from '../contexts/LockerSelectionContext';
 
 interface LockerProps {
   /** A unique identifier to describe the locker */
@@ -12,7 +13,8 @@ interface LockerProps {
 
 export default function Locker({id, lockType}: LockerProps) {
 
-  const [selectedCompartmentId, setSelectedCompartmentId] = React.useState<LockerId | null>(null);
+  const selectedLocker = useContext(LockerSelectionContext);
+  const dispatch = useContext(LockerSelectionDispatchContext);
 
   /**
    * Handles the selection of a compartment
@@ -20,7 +22,9 @@ export default function Locker({id, lockType}: LockerProps) {
    * @returns void
    **/
   function handleCompartmentSelection(compartmentId: number) {
-    setSelectedCompartmentId({locker: id, compartment: compartmentId});
+    const lockerId = {locker: id, compartment: compartmentId} as LockerId;
+    if (dispatch !== undefined)
+      dispatch({ type: 'select', lockerId: lockerId});
   }
 
   // Create the locker compartments from the locker capacity.
@@ -34,7 +38,7 @@ export default function Locker({id, lockType}: LockerProps) {
               number={n}
               lockType={lockType}
               isAvailable={true}
-              isSelected={n === selectedCompartmentId?.compartment}
+              isSelected={(n === selectedLocker.compartment && selectedLocker.locker === id) ? true : false}
               onClick={handleCompartmentSelection}/>;
   });
 
