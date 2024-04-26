@@ -4,7 +4,7 @@ import { LockerCompartmentState } from "./LockerCompartment";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta<typeof LockerCompartment> = {
-  title: "LockerCompartment",
+  title: "Base/LockerCompartment",
   component: LockerCompartment,
   decorators: [
     (Story) => (
