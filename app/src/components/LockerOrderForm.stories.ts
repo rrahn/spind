@@ -22,11 +22,17 @@ export const FillingForm: Story = {
   play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
 
-    await step('Fill in the form', async () => {
+    await step('Fill in pupil information', async () => {
       await userEvent.type(canvas.getByLabelText('Vorname'), 'John');
       await userEvent.type(canvas.getByLabelText('Nachname'), 'Doe');
       await userEvent.selectOptions(canvas.getByTestId('input-class'), '8N');
-      await userEvent.type(canvas.getByTestId('email'), 'john.doe@mail.com');
+    });
+
+    await step('Fill in contact mail', async () => {
+      const emailFields = canvas.getAllByLabelText('Email', { exact: false });
+      await waitFor(() => expect(emailFields).toHaveLength(2));
+      await userEvent.type(emailFields[0], 'john.doe@mail.com');
+      await userEvent.type(emailFields[1], 'john.doe@mail.com');
     });
 
     await step('Submit form', async () => {
