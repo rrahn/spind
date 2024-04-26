@@ -1,35 +1,36 @@
-import React from 'react';
-import NameInput from './NameInput';
+import { useEffect, useState } from 'react';
+import ContactInformation, { ContactInformationData } from './ContactInformation';
 import './LockerOrderForm.css';
-import GradeDropDown from './GradeDropDown';
+import FloorPlanCarousel from './FloorPlanCarousel';
 
 export interface LockerOrderFormProps {
-  /** A list of grades to select from. */
-  grades: string[];
-
+  /** Function callback to be called when form is submitted. */
+  handleSubmit: () => void;
 }
 
-export default function LockerOrderForm({grades}: LockerOrderFormProps) {
+export default function LockerOrderForm({handleSubmit}: LockerOrderFormProps) {
 
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [grade, setGrade] = React.useState('');
+  const [contactData, setContactData] = useState<ContactInformationData>({} as ContactInformationData);
+
+  // const hasNoInvalidInput = contactData.forename && contactData.surname && contactData.email && contactData.selectedClass;
+
+  function log() {
+    console.log("submitted data: name=" + contactData.forename + " " + contactData.surname + ", email=" + contactData.email + ", class=" + contactData.selectedClass);
+  }
 
   return (
-    <form className='flex-box--column'>
-      <p className='title'>Schrankbestellung</p>
-      <p className='info-message'>Geben Sie die Daten ihres Kindes ein.</p>
-      <div className='flex-box--row'>
-        <NameInput inputLabel="Vorname" inputValue={firstName} inputType='text' onNameChange={(value) => setFirstName(value)} />
-        <NameInput inputLabel="Nachname" inputValue={lastName} inputType='text' onNameChange={(value) => setLastName(value)} />
-        <GradeDropDown message="Klasse..." grades={grades} selectedGrade={grade} onSelectGrade={(value) => setGrade(value)}/>
-      </div>
-      {/* Select locker -> if input data is valid or if grade selected display map?
-      */}
-      <p className='info-message'>Geben Sie eine Emailadresse für die Bestellbestätigung an.</p>
-      <NameInput inputLabel="Email" inputValue={email} inputType='email' onNameChange={(value) => setEmail(value)} />
+    <form className="flex-box--column" onSubmit={(e) => { e.preventDefault(); log(); handleSubmit(); }}>
+      <ContactInformation
+        contactData={contactData}
+        onContactDataChange={(data: ContactInformationData) => setContactData(data)}
+      />
+      <FloorPlanCarousel/>
       {/* Choose payment option */}
+      <input
+        type="submit"
+        // disabled={!hasNoInvalidInput}
+        value="Submit"
+      ></input>
     </form>
   );
 }

@@ -1,9 +1,10 @@
+import { LockingMechanism } from "../model/LockerModel";
 import LockerCompartment from "./LockerCompartment";
 import { LockerCompartmentState } from "./LockerCompartment";
 import { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta<typeof LockerCompartment> = {
-  title: "LockerCompartment",
+  title: "Base/LockerCompartment",
   component: LockerCompartment,
   decorators: [
     (Story) => (
@@ -18,24 +19,26 @@ const meta: Meta<typeof LockerCompartment> = {
 export default meta;
 type Story = StoryObj<typeof LockerCompartment>;
 
-export const FreeCompartmentTest: Story = {
+export const AvailableCompartmentTest: Story = {
   args: {
     number: 5,
-    lockType: "key",
-    state: LockerCompartmentState.FREE,
+    lockType: LockingMechanism.KEY,
+    isAvailable: true,
+    isSelected: false,
+    onClick: (n: number) => console.log(n),
   },
 };
 
-export const ReservedCompartmentTest: Story = {
+export const SelectedCompartmentTest: Story = {
   args: {
-    ...FreeCompartmentTest.args,
-    state: LockerCompartmentState.RESERVED,
+    ...AvailableCompartmentTest.args,
+    isSelected: true,
   },
 };
 
-export const AssignedCompartmentTest: Story = {
+export const OccupiedCompartmentTest: Story = {
   args: {
-    ...FreeCompartmentTest.args,
-    state: LockerCompartmentState.ASSIGNED,
+    ...AvailableCompartmentTest.args,
+    isAvailable: false,
   },
 };

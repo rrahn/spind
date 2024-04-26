@@ -1,0 +1,49 @@
+import { useState } from 'react';
+import {CiSquareChevUp, CiSquareChevDown} from 'react-icons/ci';
+
+import './FloorPlanCarousel.css';
+import { FloorPlanData } from "../model/FloorPlanData";
+import FloorPlan from './FloorPlan';
+import { LockerSelectionProvider } from '../contexts/LockerSelectionContext';
+
+export default function FloorPlanCarousel() {
+
+  const [selectedFloorIdx, setSelectedFloorIdx] = useState(0);
+
+  function handleClickNavUp() {
+    setSelectedFloorIdx((selectedFloorIdx === FloorPlanData.length - 1) ? selectedFloorIdx : selectedFloorIdx + 1);
+  }
+
+  function handleClickNavDown() {
+    setSelectedFloorIdx(selectedFloorIdx - 1);
+  }
+
+  const isUpDisabled = selectedFloorIdx === FloorPlanData.length - 1;
+  const isDownDisabled = selectedFloorIdx === 0;
+
+  let buttonUpClass = "floor-carousel__nav__button floor-carousel__nav__button--up";
+  let buttonDownClass = "floor-carousel__nav__button floor-carousel__nav__button--down";
+  buttonUpClass += isUpDisabled ? " floor-carousel__nav__button--disabled" : " floor-carousel__nav__button--enabled";
+  buttonDownClass += isDownDisabled ? " floor-carousel__nav__button--disabled" : " floor-carousel__nav__button--enabled";
+
+  return (
+    <div>
+      <p className='info-message'>Suchen sie sich einen Spind aus.</p>
+      <div className="floor-carousel">
+        <LockerSelectionProvider>
+          {
+            FloorPlanData.map((floorPlan, idx) =>
+              <FloorPlan key={floorPlan.level} floorPlan={floorPlan} isSelected={selectedFloorIdx === idx}/>)
+          }
+        </LockerSelectionProvider>
+        <div className="floor-carousel__nav">
+            <CiSquareChevUp className={buttonUpClass}
+                            onClick={handleClickNavUp}/>
+            <CiSquareChevDown className={buttonDownClass}
+                              onClick={handleClickNavDown}/>
+        </div>
+        <span>{FloorPlanData[selectedFloorIdx].title}</span>
+      </div>
+    </div>
+  )
+}

@@ -6,14 +6,16 @@
 
 .user-input label {
   position: relative;
+  width: calc(100% - 40px);
 }
 
 .user-input label .user-input__text {
   background-color: #33333300;
   color: #5a5a5a;
   width: 100%;
+  min-width: minmax(100px, auto);
   padding: 20px 5px 5px 10px;
-  outline: 10;
+  /* outline: 10; */
   border: 1px solid rgba(105, 105, 105, 0.397);
   border-radius: 5px;
 }

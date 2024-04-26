@@ -3,6 +3,8 @@ import "./NameInput.css";
 import e from "express";
 
 export interface NameInputProps {
+  /** The id of the input field */
+  inputId: string;
   /** The label of the input field*/
   inputLabel: string;
   /** The value of the input field */
@@ -13,14 +15,15 @@ export interface NameInputProps {
   onNameChange: (name: string) => void;
 }
 
-export default function NameInput({inputLabel, inputValue, inputType, onNameChange}: NameInputProps) {
+export default function NameInput({inputId, inputLabel, inputValue, inputType, onNameChange}: NameInputProps) {
 
   return (
     <div className='user-input'>
-      <label htmlFor={"name-input__" + inputLabel}>
+      <label htmlFor={inputId}>
         <input
           className="user-input__text"
-          name={"name-input__" + inputLabel}
+          id={inputId}
+          data-testid={inputId}
           type={inputType}
           placeholder=""
           required={true}

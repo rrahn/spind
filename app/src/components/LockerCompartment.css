@@ -50,9 +50,15 @@
 }
 
 /* Styling of disabled button */
-.locker-compartment > button:disabled {
+.locker-compartment > button:disabled { /*011*/
   background-color: rgb(200, 200, 200);
   cursor: not-allowed;
+}
+
+/* Styling of selected button */
+.locker-compartment > .locker-button.selected {  /*020*/
+  background-color: rgb(255, 184, 108);
+  font-weight: bold;
 }
 
 /* **************************************************************************************************** */

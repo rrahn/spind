@@ -13,6 +13,7 @@ type Story = StoryObj<typeof meta>;
 
 export const TextInput: Story = {
     args: {
+      inputId: 'name',
       inputLabel: 'Name',
       inputType: 'text',
     },

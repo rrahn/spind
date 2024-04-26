@@ -9,7 +9,8 @@ const config: StorybookConfig = {
         '@storybook/addon-onboarding',
         '@storybook/addon-interactions',
         '@storybook/addon-mdx-gfm',
-        '@storybook/addon-webpack5-compiler-swc'
+        '@storybook/addon-webpack5-compiler-swc',
+        '@storybook/addon-interactions',
     ],
     framework: {
         name: '@storybook/react-webpack5',

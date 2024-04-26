@@ -2,6 +2,7 @@ import FloorPlan from "./FloorPlan";
 import { Meta, StoryObj } from "@storybook/react";
 
 import exp from "constants";
+import { FloorPlanData } from "../model/FloorPlanData";
 
 const meta = {
     title: 'Base/FloorPlan',
@@ -14,6 +15,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    image: './hwg-floor-plan.png',
+    floorPlan: FloorPlanData[0],
+    isSelected: true,
   },
 };
