@@ -4,25 +4,29 @@
   max-width: 500px;
 }
 
-.flex-box--row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
 .title {
-  font-size: 28px;
+  font-size: 40px;
   font-weight: 600;
   letter-spacing: -1px;
   position: relative;
   display: flex;
   align-items: center;
-  padding-left: 30px;
-  color: #f49b1e;
+  /* padding-left: 30px; */
+  color: #26b4b8;
 }
 
 .info-message {
-  font-size: 14.5px;
-  color: rgb(152, 152, 152);
+  font-size: 20px;
+  color: rgb(90, 85, 85);
+}
+
+.flex-box--row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-width: 600px;
+  margin-bottom: 20px;
 }
 

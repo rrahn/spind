@@ -12,5 +12,11 @@ type Story = StoryObj<typeof meta>;
 
 export const DefaultTest: Story = {
   args: {
+    contactData: {
+      forename: "John",
+      surname: "Doe",
+      email: "john.doe@mail.com",
+      selectedClass: "5N",
+    },
   }
 };
