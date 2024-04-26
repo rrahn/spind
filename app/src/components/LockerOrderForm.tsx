@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ContactInformation, { ContactInformationData } from './ContactInformation';
 import './LockerOrderForm.css';
+import FloorPlanCarousel from './FloorPlanCarousel';
 
 export interface LockerOrderFormProps {
   /** Function callback to be called when form is submitted. */
@@ -23,8 +24,7 @@ export default function LockerOrderForm({handleSubmit}: LockerOrderFormProps) {
         contactData={contactData}
         onContactDataChange={(data: ContactInformationData) => setContactData(data)}
       />
-      {/* Select locker -> if input data is valid or if grade selected display map?
-      */}
+      <FloorPlanCarousel/>
       {/* Choose payment option */}
       <input
         type="submit"
