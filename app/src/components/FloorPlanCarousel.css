@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 800px;
+  width: 100%;
   height: auto;
 }
 
@@ -19,7 +19,7 @@
   position: absolute;
   width: 2rem;
   height: 2rem;
-  left: 400px;
+  left: 50%;
   display: flex;
   justify-content: center;
   align-items: center;

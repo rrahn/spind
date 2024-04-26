@@ -28,7 +28,7 @@ export default function FloorPlanCarousel() {
 
   return (
     <div>
-      <p>FloorPlanCarousel</p>
+      <p className='info-message'>Suchen sie sich einen Spind aus.</p>
       <div className="floor-carousel">
         <LockerSelectionProvider>
           {
