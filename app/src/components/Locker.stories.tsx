@@ -1,12 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import Locker from "./Locker";
 import { LockingMechanism } from '../model/LockerModel';
+import { LockerSelectionProvider } from '../contexts/LockerSelectionContext';
 
-const meta = {
+const meta: Meta<typeof Locker> = {
     title: 'Base/Locker',
     component: Locker,
+    decorators: [
+        (Story) => (
+          <LockerSelectionProvider>
+            <Story />
+          </LockerSelectionProvider>
+        ),
+    ],
     tags: ['autodocs'],
-} satisfies Meta<typeof Locker>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
