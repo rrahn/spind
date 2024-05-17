@@ -7,7 +7,7 @@ const port = 3000;
 
 module.exports = {
     mode: 'development',
-    entry: './src/index.js',
+    entry: './src/App.tsx',
     output: {
         path: path.join(__dirname, '/dist'),
         filename: 'bundle.[fullhash].js',
@@ -16,7 +16,7 @@ module.exports = {
     devtool: 'inline-source-map',
     plugins: [
       new HtmlWebpackPlugin({
-        template: path.join(__dirname, '/src/static/index.html'),
+        template: path.join(__dirname, '/src/index.html'),
         inject: 'body',
         scriptLoading: 'module'
       }),
