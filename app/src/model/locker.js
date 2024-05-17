@@ -1,5 +1,5 @@
 const Box = require ('./box');
-const BoxStatus = require ('./BoxStatus');
+const BoxStatus = require ('./boxStatus');
 
 module.exports = class Locker {
     id = null;
