@@ -1,6 +1,7 @@
 
 import { FloorPlanModel } from './FloorPlanModel'; // Import the FloorPlanModel class
 import { LockerModel, LockingMechanism } from './LockerModel';
+import FloorPlanImgUri from '../../assets/hwg-floor-plan.png';
 
 const areas: number[][] = [
   [63,850,204,904],     // 0
@@ -22,7 +23,7 @@ const areas: number[][] = [
 const floor0: FloorPlanModel = {
   level: 0,
   title: "Erdgeschoss",
-  image: "./hwg-floor-plan.png",
+  image: FloorPlanImgUri,
   lockers: [
     {
       id: 11,
@@ -90,7 +91,7 @@ const floor0: FloorPlanModel = {
 const floor1: FloorPlanModel = {
   level: 1,
   title: "1. Stock",
-  image: "./hwg-floor-plan.png",
+  image: FloorPlanImgUri,
   lockers: [
     {
       id: 31,
@@ -158,7 +159,7 @@ const floor1: FloorPlanModel = {
 const floor2: FloorPlanModel = {
   level: 2,
   title: "2. Stock",
-  image: "./hwg-floor-plan.png",
+  image: FloorPlanImgUri,
   lockers: [
     {
       id: 32,

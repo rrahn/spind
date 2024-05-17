@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import LockerOrderForm from './components/LockerOrderForm';
 
 const App: React.FC = () => {
+
   return (
     <div>
-      <h1>Hello, World!</h1>
-      <p>This is my first paragraph</p>
+      <LockerOrderForm handleSubmit={() => console.log("Got some user data!")} />
     </div>
   );
 };

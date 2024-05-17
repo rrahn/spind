@@ -2,6 +2,8 @@ import React from "react";
 
 import "./LockerCompartment.css";
 import { LockingMechanism } from "../model/LockerModel";
+import KeyLockImgUri from "../../assets/key-lock.png";
+import CombinationLockImgUri from "../../assets/digit-lock.png";
 
 export const enum LockerCompartmentState {
   AVAILABLE,
@@ -31,7 +33,7 @@ interface LockerCompartmentProps {
 
 export default function LockerCompartment({number, lockType, isAvailable, isSelected, onClick}: LockerCompartmentProps) {
 
-  const lockImage = "./" + lockType + "-lock.png";
+  const lockImage = (lockType === LockingMechanism.KEY) ? KeyLockImgUri : CombinationLockImgUri;
   console.log('lockType: ' + lockType);
 
   return (
