@@ -1,92 +1,73 @@
 const path = require('path');
 const webpack = require('webpack');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const port = 3000;
+const dev = true;
+
+const hmrPlugins = dev ? ['webpack-hot-middleware/client'] : [];
+
+console.log(__dirname);
+console.log(path.join(__dirname, 'client', 'public', 'index.html'));
 
 module.exports = {
-  mode: 'development',
-  entry: './src/App.tsx',
-  output: {
-    path: path.join(__dirname, '/dist'),
-    filename: 'bundle.[fullhash].js',
-    clean: true,
-  },
-  devtool: 'inline-source-map',
-  plugins: [
-    new HtmlWebpackPlugin({
-    template: path.join(__dirname, '/src/index.html'),
-    inject: 'body',
-    scriptLoading: 'module'
-    }),
-    new MiniCssExtractPlugin()
-  ],
-  resolve: {
-    fallback: {
-      'fs': false,
-      'buffer': false,
-      'net': false,
-      'path': false,
-      'stream': false,
-      'crypto': false,
-      'assert': false,
-      'process': false,
-      'child_process': false,
-      'util': false,
-      'tls': false,
-      'dns': false,
-      'url': false,
-      'os': false,
-      'timers': false,
-      'zlib': false,
-      'http': false,
-      'https': false,
-      'constants': false,
-      'querystring': false,
-      'aws-sdk': false,
-      'mock-aws-s3': false,
-      'async_hooks': false,
-      'bluebird': false,
-      'cardinal': false,
-      'npm': false,
-      'nock': false
+    mode: 'development',
+    context: path.resolve(__dirname),
+    entry: [...hmrPlugins, './client/App.tsx'],
+    devtool: dev ? 'inline-source-map' : undefined,
+    output: {
+        path: path.join(__dirname, 'dist'),
+        filename: 'bundle.[fullhash].js',
+        clean: true,
+        pathinfo: true,
+        publicPath: '/'
     },
-  },
-  module: {
-    rules: [
-    {
-      test: /.(js|jsx)$/,
-      exclude: /node_modules/,
-      use: {
-      loader: "babel-loader"
-      }
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.join('client', 'public', 'index.html'), // path.join(__dirname, 'client', 'public', 'index.html'),
+            filename: 'index.html',
+            inject: 'body',
+            scriptLoading: 'module',
+        }),
+        // new webpack.ProvidePlugin({
+        //     React: 'react',
+        // }),
+        new MiniCssExtractPlugin(),
+    ],
+    module: {
+        rules: [
+            {
+                test: /.(js|jsx)$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                },
+            },
+            {
+                test: /\.(ts|tsx)$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'ts-loader',
+                },
+            },
+            {
+                test: /\.(css)$/,
+                exclude: /node_modules/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader'],
+            },
+            {
+                test: /\.(png|svg|jpe?g|gif)$/i,
+                exclude: /node_modules/,
+                use: ['file-loader'],
+            },
+        ],
     },
-    {
-      test: /\.(ts|tsx)$/,
-      exclude: /node_modules/,
-      use: {
-      loader: "ts-loader"
-      }
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js'],
     },
-    {
-      test: /\.(css)$/,
-      exclude: /node_modules/,
-      use: [MiniCssExtractPlugin.loader, "css-loader"]
+    devServer: {
+        hot: true,
+        historyApiFallBack: true,
     },
-    {
-      test: /\.(png|svg|jpe?g|gif)$/i,
-      use: ["file-loader"],
-    }
-    ]
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-  },
-  devServer: {
-    host: '0.0.0.0',
-    port: port,
-    historyApiFallback: true,
-    open: true
-  }
-}
+};

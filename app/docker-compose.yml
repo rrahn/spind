@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    command: sh -c "yarn install && yarn run dev"
+    command: sh -c "yarn install && yarn run server-dev"
     ports:
       - 127.0.0.1:3000:3000
       - 127.0.0.1:6006:6006
@@ -12,7 +12,7 @@ services:
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
-      MYSQL_DB: todos
+      MYSQL_DB: lockerDB
 
   mysql:
     image: mysql:8.0
