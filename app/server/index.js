@@ -10,8 +10,6 @@ const getLockersForUnit = require('./routes/getLockersForUnit.js');
 
 const path = require('path');
 const basename = '/Schliessfaecher';
-const FloorPlanData = require('./models/FloorPlanData.js');
-
 
 const dev = true;
 const port = process.env.PORT || 3000;
@@ -73,11 +71,6 @@ app.use(express.json()); // Enable JSON parsing for request bodies
 //     console.log('Sent list of items');
 //     res.json(list);
 // });
-
-app.get('/api/getFloorplanData', (req, res) => {
-    console.log('Sent floor plan data: ' + FloorPlanData);
-    res.send(FloorPlanData);
-});
 
 app.get('/api/getFloorMaps', getFloorMaps);
 app.get('/api/getLockerUnits', getLockerUnits);
