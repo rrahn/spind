@@ -14,6 +14,7 @@ const basename = '/Schliessfaecher';
 const dev = true;
 const port = process.env.PORT || 3000;
 const distDir = path.join(__dirname, '..', 'dist');
+const publicDir = path.join(__dirname, '..', 'public');
 const htmlIndexFile = path.join(distDir, 'index.html'); // NEW
 
 console.log('Dist dir: ' + distDir);
@@ -35,7 +36,8 @@ if (dev) {
 }
 
 app.use(express.static(distDir)); // Serve the static files from the client app
-app.use('/assets', express.static(path.join(__dirname, '..', 'assets'))); // Serve the static files from the assets folder
+app.use('/public', express.static(publicDir)); // Serve the static files from the public folder
+app.use('/assets', express.static(path.join(publicDir, 'assets'))); // Serve the static files from the assets folder
 app.use(express.json()); // Enable JSON parsing for request bodies
 
 /** Define middleware functions! */

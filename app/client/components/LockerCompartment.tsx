@@ -2,8 +2,8 @@ import React from "react";
 
 import "./LockerCompartment.css";
 import { LockingMechanism } from "./LockerModel";
-import KeyLockImgUri from "../../assets/key-lock.png";
-import CombinationLockImgUri from "../../assets/digit-lock.png";
+import KeyLockImgUri from "../../public/assets/key-lock.png";
+import CombinationLockImgUri from "../../public/assets/digit-lock.png";
 
 export const enum LockerCompartmentState {
   AVAILABLE,
