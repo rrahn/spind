@@ -1,5 +1,7 @@
 import type { Preview } from '@storybook/react';
 import { initialize, mswLoader } from 'msw-storybook-addon'; // Import the mswLoader module
+import { http, HttpResponse } from 'msw';
+import { TestDataCombinationLocker, TestDataKeyLocker } from './locker-mocks';
 
 /*
  * Initializes MSW
@@ -15,6 +17,18 @@ const preview: Preview = {
             matchers: {
                 color: /(background|color)$/i,
                 date: /Date$/i,
+            },
+        },
+        msw: {
+            handlers: {
+                locker: [
+                    http.get('/api/getLockers/unit/1', () => {
+                        return HttpResponse.json(TestDataKeyLocker);
+                    }),
+                    http.get('/api/getLockers/unit/2', () => {
+                        return HttpResponse.json(TestDataCombinationLocker);
+                    }),
+                ],
             },
         },
     },
