@@ -21,7 +21,7 @@
 }
 
 .user-input label .user-input__text + span {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255);
   position: absolute;
   left: 10px;
   top: 0px;
@@ -33,7 +33,7 @@
 .user-input label .user-input__text:placeholder-shown + span {
   color: #a6a6a6;
   top: 14px;
-  font-size: 1.3em;
+  font-size: 1.3rem;
 }
 
 .user-input label .user-input__text:focus + span,
@@ -52,6 +52,7 @@
 } */
 
 .user-input__text {
-  font-size: large;
+  line-height: 1.5rem;
+  font-size: 1.2rem;
 }
 

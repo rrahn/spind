@@ -16,7 +16,7 @@ export interface NameInputProps {
 export default function NameInput({inputId, inputLabel, inputValue, inputType, onNameChange}: NameInputProps) {
 
   return (
-    <div className='user-input'>
+    <div className='user-input flex-box--flex-column'>
       <label htmlFor={inputId}>
         <input
           className="user-input__text"
