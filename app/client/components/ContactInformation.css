@@ -30,3 +30,14 @@
   margin-bottom: 20px;
 }
 
+/* Use this class to get a flex column with dynamic width */
+.flex-box--flex-column {
+  flex: 1;
+}
+
+/* Use this class to get a flex column fixed to a width of 150px */
+.flex-box--fixed-column-150px {
+  width: 150px; /* replace with your desired width */
+}
+
+

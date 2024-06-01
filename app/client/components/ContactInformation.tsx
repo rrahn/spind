@@ -42,7 +42,7 @@ export default function ContactInformation({contactData, onContactDataChange}: C
           onNameChange={(name) => onContactDataChange({...contactData, surname: name})}
         />
         <GradeDropDown
-          message={"select your class:"}
+          message={"Klasse"}
           grades={classes}
           selectedGrade={contactData.selectedClass}
           onSelectGrade={(c: string) => onContactDataChange({...contactData, selectedClass: c})}
@@ -51,14 +51,14 @@ export default function ContactInformation({contactData, onContactDataChange}: C
       <p className='info-message'>Geben Sie Ihre Email-Adresse an.</p>
       <div className='flex-box--row'>
         <NameInput
-          inputId="email"
+          inputId="email-1"
           inputLabel="Email"
           inputValue={contactData.email}
           inputType="email"
           onNameChange={(email) => onContactDataChange({...contactData, email: email})}
         />
         <NameInput
-          inputId="email"
+          inputId="email-2"
           inputLabel="Email verifizieren"
           inputValue={verificationEmail}
           inputType="email"
