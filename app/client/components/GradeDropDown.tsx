@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import './GradeDropDown.css';
 
 export interface GradeDropDownProps {
@@ -14,12 +14,24 @@ export interface GradeDropDownProps {
 
 export default function GradeDropDown({message, grades, selectedGrade, onSelectGrade}: GradeDropDownProps) {
 
-  const [selection, setSelection] = useState(message);
+  const [selection, setSelection] = useState(selectedGrade ? selectedGrade : message);
   const [isChecked, setIsChecked] = useState(false);
 
+  const dropdownRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsChecked(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleSelect = (event: React.MouseEvent<HTMLAnchorElement>, grade: string) => {
-    console.log('The passed event: ' + event);
-    console.log('The selected grade is: ' + grade );
     onSelectGrade(grade);
     setSelection(grade);
     setIsChecked(false);
@@ -32,7 +44,7 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
   const hasSelection = selection !== message;
 
   return (
-    <div className="dropdown toggle flex-box--fixed-column-150px">
+    <div ref={dropdownRef} className="dropdown toggle flex-box--fixed-column-150px">
       <input
         id="t1"
         data-testid="t1"
@@ -41,8 +53,7 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
         value={selection}
         required={true}
         onChange={handleToggle}
-        >
-      </input>
+        />
       <label htmlFor="t1" className={hasSelection ? 'as-text' : 'as-placeholder'}>{selection}
         <span className={hasSelection ? 'as-side-note' : 'as-placeholder'}>{message}</span>
       </label>
