@@ -6,6 +6,13 @@ const meta = {
     title: 'Base/GradeDropDown',
     component: GradeDropDown,
     tags: ['autodocs'],
+    decorators: [
+        (Story) => (
+            <div style={{ width: '150px'}}>
+                <Story />
+            </div>
+        ),
+    ],
 } as Meta<typeof GradeDropDown>;
 
 export default meta;
@@ -15,5 +22,12 @@ export const DefaultTest: Story = {
     args: {
       message: 'Klasse',
       grades: ['5N', '6N', '7N', '7A', '7B', '8N', '8A', '8B', '9N', '9A', '9B', '10N', '10A', '10B', '11', '12'],
+    },
+};
+
+export const SelectedGrade: Story = {
+    args: {
+      ...DefaultTest.args,
+      selectedGrade: '7A',
     },
 };
