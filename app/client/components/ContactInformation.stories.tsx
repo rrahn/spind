@@ -16,6 +16,7 @@ export const DefaultTest: Story = {
       forename: "John",
       surname: "Doe",
       email: "john.doe@mail.com",
+      emailVerification: "john.doe@mail.com",
       selectedClass: "5N",
     },
   }

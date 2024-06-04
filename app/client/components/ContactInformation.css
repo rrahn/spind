@@ -28,6 +28,7 @@
   width: 100%;
   min-width: 600px;
   margin-bottom: 20px;
+  gap: 30px;
 }
 
 /* Use this class to get a flex column with dynamic width */
