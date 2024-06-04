@@ -10,9 +10,11 @@ const meta = {
     tags: ['autodocs'],
     decorators: [
         (Story) => (
+        <div style={{ width: '800px'}}>
           <LockerSelectionProvider>
             <Story />
           </LockerSelectionProvider>
+        </div>
         ),
     ],
 } as Meta<typeof FloorPlanCarousel>;
