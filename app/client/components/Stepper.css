@@ -1,0 +1,32 @@
+
+.stepper--wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stepper--circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(182, 177, 177, 0.5);
+}
+
+.stepper--line{
+  width: 80px;
+  height: 5px;
+  margin: 0 5px;
+  border-radius: 5px;
+  background-color: rgba(182, 177, 177, 0.5);
+}
+
+.stepper--circle__passed,
+.stepper--circle__active,
+.stepper--line__passed {
+  background-color: #26b4b8;
+}
+
+.stepper--circle__active{
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #26b4b8;
+}
