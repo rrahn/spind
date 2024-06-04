@@ -2,11 +2,19 @@ import { StoryObj, Meta } from "@storybook/react";
 import { http, HttpResponse } from "msw";
 
 import FloorPlanCarousel from './FloorPlanCarousel';
+import { LockerSelectionProvider } from "../contexts/LockerSelectionContext";
 
 const meta = {
     title: 'Base/FloorPlanCarousel',
     component: FloorPlanCarousel,
     tags: ['autodocs'],
+    decorators: [
+        (Story) => (
+          <LockerSelectionProvider>
+            <Story />
+          </LockerSelectionProvider>
+        ),
+    ],
 } as Meta<typeof FloorPlanCarousel>;
 
 export default meta;

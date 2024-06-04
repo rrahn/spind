@@ -88,12 +88,10 @@ export default function FloorPlanCarousel() {
       <div>
         <p className='info-message'>Suchen sie sich einen Spind aus.</p>
         <div className="floor-carousel">
-          <LockerSelectionProvider>
-            {
-              floorMaps.map((floorPlan, idx) =>
-                <FloorPlan key={floorPlan.level} floorPlan={floorPlan} lockerUnitMap={lockerUnitMap} isSelected={selectedFloorIdx === idx}/>)
-            }
-          </LockerSelectionProvider>
+          {
+            floorMaps.map((floorPlan, idx) =>
+              <FloorPlan key={floorPlan.level} floorPlan={floorPlan} lockerUnitMap={lockerUnitMap} isSelected={selectedFloorIdx === idx}/>)
+          }
           <div className="floor-carousel__nav">
               <CiSquareChevUp className={buttonUpClass}
                               onClick={handleClickNavUp}/>
