@@ -1,4 +1,5 @@
 import { DialogHTMLAttributes, useEffect, useRef } from "react";
+import { Button } from "./Button";
 
 interface LockerModalDialogProps {
   /** The modal open state */
@@ -34,9 +35,7 @@ export default function LockerModalDialog({ openModal, closeModal, children } : 
       onCancel={closeModal}
     >
       {children}
-      <button onClick={closeModal}>
-        Close
-      </button>
+      <Button label="Ok" size="small" onClick={closeModal}/>
     </dialog>
   );
 }
