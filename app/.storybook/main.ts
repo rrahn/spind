@@ -1,8 +1,8 @@
 import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
-    stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-    staticDirs: ['../assets', '../src/static'],
+    stories: ['../client/**/*.mdx', '../client/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+    staticDirs: ['../public', '../public/assets'],
     addons: [
         '@storybook/addon-links',
         '@storybook/addon-essentials',
@@ -11,6 +11,7 @@ const config: StorybookConfig = {
         '@storybook/addon-mdx-gfm',
         '@storybook/addon-webpack5-compiler-swc',
         '@storybook/addon-interactions',
+        'storybook-addon-remix-react-router',
     ],
     framework: {
         name: '@storybook/react-webpack5',

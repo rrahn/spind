@@ -1,0 +1,156 @@
+.dropdown {
+  width: 100%;
+  min-width: minmax(100px, auto);
+  display: inline-block;
+  margin-right: 10px;
+  position: relative;
+}
+
+/* Do not show the checkbox input */
+.dropdown.toggle > input {
+  display: none;
+}
+
+/* Style of the button showing the selection */
+.dropdown.toggle label {
+  display: block;
+  /* padding: 0 0 0 10px; */
+  padding: 20px 5px 5px 10px;
+  /* text-decoration: none; */
+  line-height: 1.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #5a5a5a;
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgba(105, 105, 105, 0.397);
+  border-radius: 5px;
+  box-shadow: 0 8px 5px -2px rgba(243, 241, 241, 0.3);
+}
+
+/***************************************************/
+/* Basic styling of the arrow of the drop down box */
+.dropdown.toggle > label::after{
+  content: "";
+  float: right;
+  margin: 0px 15px 0 0;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+}
+
+/* The arrow of the drop down button when the input is not checked */
+.dropdown.toggle > input:not(:checked) ~ label::after {
+  border-top: 10px solid #26b4b8;
+}
+
+/* The arrow of the drop down button when the input is checked */
+.dropdown.toggle > input:checked ~ label::after {
+  border-bottom: 10px solid #26b4b8;
+}
+/***************************************************/
+
+/***************************************************/
+/* Style of the container showing the list of elements to choose from */
+.dropdown ul {
+  list-style-type: none;
+  display: block;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+  border: 1px solid rgba(105, 105, 105, 0.397);
+  box-shadow: 0 8px 5px -5px rgba(0,0,0,0.5);
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Style of the list of elements to choose from */
+.dropdown ul li a {
+  display: block;
+  padding: 0 0 0 10px;
+  line-height: 40px;
+  font-size: 18px;
+  color: #5a5a5a;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 8px 5px -2px rgba(243, 241, 241, 0.3);
+}
+
+.dropdown ul li {
+  height: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 300ms ease-in-out;
+}
+
+/* Make the top left and right corner of the first list element rounded */
+.dropdown li:first-child a {
+  border-radius: 5px 5px 0 0;
+}
+/* Make the bottom left and right corner of the last list element rounded */
+.dropdown li:last-child a {
+  border-radius: 0 0 5px 5px;
+}
+
+/* Style of the label when hovering over it or when the checkbox is checked */
+/* here we could control what should happen with the old value. */
+/* We can do something similar with the input control, only that we use a span to show the current value */
+/* .dropdown.toggle > label:hover,
+.dropdown.toggle > input:checked ~ label, */
+.dropdown a:hover {
+  background-color: #EEE;
+  color: #666;
+}
+
+.dropdown li:first-child a:hover::before {
+  border-bottom-color: #EEE;
+}
+
+/* The size of the list elements when the input is checked and the list is expanded */
+.dropdown.toggle > input:checked ~ ul li {
+  height: 40px;
+}
+
+/* The expanded list starts 15px below the button */
+.dropdown.toggle > input:checked ~ ul {
+  margin-top: 15px;
+}
+
+/* The collapsed list of elements has no border */
+.dropdown.toggle > input:not(:checked) ~ ul {
+  border: none;
+}
+
+/***************************************************/
+/* Styling of the span showing the placeholder for
+ * the dropdown input button.
+ */
+
+ .dropdown.toggle input ~ label.as-placeholder {
+  color: rgba(255, 255, 255, 0);
+  font-size: 40px;
+ }
+
+.dropdown.toggle input ~ label span {
+  color: rgba(255, 255, 255, 0);
+  position: absolute;
+  left: 10px;
+  top: 0px;
+  font-size: 40px;
+  transition: 0.3s ease;
+}
+
+.dropdown.toggle input ~ label span.as-placeholder {
+  color: #a6a6a6;
+  top: 20px;
+  font-size: 1.3rem;
+}
+
+.dropdown.toggle input ~ label span.as-side-note {
+  color: #26b4b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/***************************************************/

@@ -1,0 +1,58 @@
+.user-input {
+  display: flex;
+  width: 100%;
+}
+
+.user-input label {
+  position: relative;
+  width: calc(100%);
+}
+
+.user-input label .user-input__text {
+  background-color: rgba(255, 255, 255);
+  color: #5a5a5a;
+  width: 100%;
+  min-width: minmax(100px, auto);
+  padding: 20px 5px 5px 10px;
+  /* outline: 10; */
+  border: 1px solid rgba(105, 105, 105, 0.397);
+  border-radius: 5px;
+  line-height: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.user-input label .user-input__text + span {
+  position: absolute;
+  color: rgba(255, 255, 255, 1); /* -- why do we need this? */
+  left: 10px;
+  top: 20px;
+  line-height: 1.5rem;
+  font-size: 1.2rem;
+  cursor: text;
+  transition: 0.3s ease;
+}
+
+.user-input label .user-input__text:placeholder-shown + span {
+  color: #a6a6a6;
+}
+
+.user-input label .user-input__text:focus + span,
+.user-input label .user-input__text:valid + span {
+  color: #26b4b8;
+  top: 3px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* In case the input is not empty and invalid make a red border around the input element... */
+.user-input label .user-input__text:invalid:not(.user-input__text:placeholder-shown) {
+  border: 1px solid #ff0000;
+}
+/* ... and highlight the label in red  */
+.user-input label .user-input__text:invalid:not(.user-input__text:placeholder-shown) + span {
+  color: #ff0000;
+  top: 3px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
