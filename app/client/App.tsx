@@ -4,6 +4,11 @@ import { Link, Outlet, RouterProvider, createBrowserRouter } from 'react-router-
 
 import LockerOrderForm from './components/LockerOrderForm';
 import ErrorPage from './components/ErrorPage';
+import FormPage from './pages/FormPage';
+import FormPageContact from './pages/FormPageContact';
+import FormPageLocker from './pages/FormPageLocker';
+import FormPagePayment from './pages/FormPagePayment';
+import FormPageSummary from './pages/FormPageSummary';
 
 function Main() {
 
@@ -34,13 +39,29 @@ function Main() {
 const router = createBrowserRouter([  // This is the router configuration
   {
     path: "/",
-    element: <Main />,
+    element: <FormPage />,
     errorElement: <ErrorPage />,
     children: [
       {
         path: "buchen",
         element: <LockerOrderForm handleSubmit={() => console.log("Got some user data!")} />,
       },
+      {
+        path: "contact",
+        element: <FormPageContact />,
+      },
+      {
+        path: "locker",
+        element: <FormPageLocker />,
+      },
+      {
+        path: "summary",
+        element: <FormPageSummary />,
+      },
+      {
+        path: "payment",
+        element: <FormPagePayment />,
+      }
       ],
   },
 ], {
