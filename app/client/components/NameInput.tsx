@@ -21,6 +21,7 @@ export default function NameInput({inputId, inputLabel, inputValue, inputType, o
         <input
           className="user-input__text"
           id={inputId}
+          name={inputId}
           data-testid={inputId}
           type={inputType}
           placeholder=""
