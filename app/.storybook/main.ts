@@ -11,6 +11,7 @@ const config: StorybookConfig = {
         '@storybook/addon-mdx-gfm',
         '@storybook/addon-webpack5-compiler-swc',
         '@storybook/addon-interactions',
+        'storybook-addon-remix-react-router',
     ],
     framework: {
         name: '@storybook/react-webpack5',

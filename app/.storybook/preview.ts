@@ -2,6 +2,7 @@ import type { Preview } from '@storybook/react';
 import { initialize, mswLoader } from 'msw-storybook-addon'; // Import the mswLoader module
 import { http, HttpResponse } from 'msw';
 import { TestDataCombinationLocker, TestDataKeyLocker } from './locker-mocks';
+import { withRouter } from 'storybook-addon-remix-react-router'; // Import the router decorator
 
 /*
  * Initializes MSW
@@ -31,8 +32,10 @@ const preview: Preview = {
                 ],
             },
         },
+        layout: 'centered',
     },
-    loaders: [mswLoader] // 👈 Add the MSW loader to all stories
+    loaders: [mswLoader], // 👈 Add the MSW loader to all stories
+    decorators: [withRouter], // 👈 Add the router decorator to all stories
 };
 
 export default preview;
