@@ -1,6 +1,7 @@
 import { register } from "module";
 import "./NameInput.css";
 import { useFormContext } from "react-hook-form";
+import { useEffect } from "react";
 
 export interface NameInputProps {
   /** The id of the input field */
@@ -17,20 +18,36 @@ export interface NameInputProps {
 
 export default function NameInput({inputId, inputLabel, inputValue, inputType, onNameChange, ...props}: NameInputProps) {
 
-  const { register } = useFormContext();
+  const { register, watch, formState: { errors } } = useFormContext();
+  const primaryEmail = watch('email');
+
+  const isInvalidEmail2 = inputId === 'emailVerification' && errors.emailVerification;
+  const invalidInput = isInvalidEmail2 ? 'invalid-input' : '';
 
   return (
-    <div className='user-input flex-box--flex-column'>
+
+    <div className='user-input'>
       <label htmlFor={inputId}>
-        <input
-          className="user-input__text"
-          id={inputId}
-          data-testid={inputId}
-          type={inputType}
-          placeholder=""
-          required={true}
-          {...register(inputId)}
-        />
+        {inputId === 'emailVerification' ?
+          <input
+            className={["user-input__text", invalidInput].join(' ')}
+            id={inputId}
+            data-testid={inputId}
+            type={inputType}
+            placeholder=""
+            required={true}
+            {...register(inputId, {validate: (value) => value === primaryEmail || 'Email stimmt nicht überein'})}
+          /> :
+          <input
+            className="user-input__text"
+            id={inputId}
+            data-testid={inputId}
+            type={inputType}
+            placeholder=""
+            required={true}
+            {...register(inputId)}
+          />
+        }
         <span>{inputLabel}</span>
       </label>
     </div>

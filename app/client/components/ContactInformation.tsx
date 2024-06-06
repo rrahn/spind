@@ -3,6 +3,8 @@ import NameInput from "./NameInput";
 import GradeDropDown from "./GradeDropDown";
 
 import "./ContactInformation.css"
+import "./Tooltip.css"
+import { useFormContext } from "react-hook-form";
 
 export type ContactInformationData = {
   forename: string,
@@ -19,26 +21,35 @@ interface ContactInformationProps {
 
 export default function ContactInformation({contactData, onContactDataChange, ...props}: ContactInformationProps) {
 
+  const { formState: { errors } } = useFormContext();
+
   const classes = ['5N', '6N', '7A', '7B', '7N', '8A', '8B', '8N', '9A', '9B', '9N', '10A', '10B', '10N',  '11', '12'];
+
+  const showTooltip = errors.emailVerification ? "show-tooltip" : "";
 
   return (
     <div>
       <p className='info-message'>Geben Sie Name und Klasse des Schülers/der Schülerin ein.</p>
+
       <div className='flex-box--row'>
-        <NameInput
-          inputId="forename"
-          inputLabel="Vorname"
-          inputValue={contactData.forename}
-          inputType="text"
-          onNameChange={(name) => onContactDataChange({...contactData, forename: name})}
-        />
-        <NameInput
-          inputId="surname"
-          inputLabel="Nachname"
-          inputValue={contactData.surname}
-          inputType="text"
-          onNameChange={(name) => onContactDataChange({...contactData, surname: name})}
-        />
+        <div className='flex-box--flex-column'>
+          <NameInput
+            inputId="forename"
+            inputLabel="Vorname"
+            inputValue={contactData.forename}
+            inputType="text"
+            onNameChange={(name) => onContactDataChange({...contactData, forename: name})}
+          />
+        </div>
+        <div className='flex-box--flex-column'>
+          <NameInput
+            inputId="surname"
+            inputLabel="Nachname"
+            inputValue={contactData.surname}
+            inputType="text"
+            onNameChange={(name) => onContactDataChange({...contactData, surname: name})}
+          />
+        </div>
         <GradeDropDown
           message={"Klasse"}
           grades={classes}
@@ -48,20 +59,27 @@ export default function ContactInformation({contactData, onContactDataChange, ..
         </div>
       <p className='info-message'>Geben Sie Ihre Email-Adresse an.</p>
       <div className='flex-box--row'>
-        <NameInput
-          inputId="email"
-          inputLabel="Email"
-          inputValue={contactData.email}
-          inputType="email"
-          onNameChange={(email) => onContactDataChange({...contactData, email: email})}
-        />
-        <NameInput
-          inputId="emailVerification"
-          inputLabel="Email verifizieren"
-          inputValue={contactData.emailVerification}
-          inputType="email"
-          onNameChange={(email) => onContactDataChange({...contactData, emailVerification: email})}
-        />
+        <div className='flex-box--flex-column'>
+          <NameInput
+            inputId="email"
+            inputLabel="Email"
+            inputValue={contactData.email}
+            inputType="email"
+            onNameChange={(email) => onContactDataChange({...contactData, email: email})}
+          />
+        </div>
+        <div className='flex-box--flex-column tooltip-container'>
+          <NameInput
+            inputId="emailVerification"
+            inputLabel="Email verifizieren"
+            inputValue={contactData.emailVerification}
+            inputType="email"
+            onNameChange={(email) => onContactDataChange({...contactData, emailVerification: email})}
+          />
+          {errors.emailVerification?.message &&
+            <span className={["tooltip", showTooltip].join(" ")}>{errors.emailVerification.message.toString()}</span>
+          }
+        </div>
      </div>
     </div>
   );

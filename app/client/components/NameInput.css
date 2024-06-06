@@ -46,12 +46,14 @@
 }
 
 /* In case the input is not empty and invalid make a red border around the input element... */
+.user-input label .user-input__text.invalid-input,
 .user-input label .user-input__text:invalid:not(.user-input__text:placeholder-shown) {
-  border: 1px solid #ff0000;
+  border: 1px solid var(--danger-color);
 }
 /* ... and highlight the label in red  */
+.user-input label .user-input__text.invalid-input + span,
 .user-input label .user-input__text:invalid:not(.user-input__text:placeholder-shown) + span {
-  color: #ff0000;
+  color: var(--danger-color);
   top: 3px;
   font-size: 0.9em;
   font-weight: 500;
