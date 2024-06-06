@@ -1,4 +1,6 @@
+import { register } from "module";
 import "./NameInput.css";
+import { useFormContext } from "react-hook-form";
 
 export interface NameInputProps {
   /** The id of the input field */
@@ -13,7 +15,9 @@ export interface NameInputProps {
   onNameChange: (name: string) => void;
 }
 
-export default function NameInput({inputId, inputLabel, inputValue, inputType, onNameChange}: NameInputProps) {
+export default function NameInput({inputId, inputLabel, inputValue, inputType, onNameChange, ...props}: NameInputProps) {
+
+  const { register } = useFormContext();
 
   return (
     <div className='user-input flex-box--flex-column'>
@@ -21,13 +25,11 @@ export default function NameInput({inputId, inputLabel, inputValue, inputType, o
         <input
           className="user-input__text"
           id={inputId}
-          name={inputId}
           data-testid={inputId}
           type={inputType}
           placeholder=""
           required={true}
-          value={inputValue}
-          onChange={(e) => onNameChange(e.target.value)}
+          {...register(inputId)}
         />
         <span>{inputLabel}</span>
       </label>

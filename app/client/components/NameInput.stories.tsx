@@ -1,11 +1,21 @@
-import e from "express";
 import NameInput from "./NameInput";
 import { StoryObj, Meta } from "@storybook/react";
+import { FormProvider, useForm } from "react-hook-form";
+
+const withFormDecorator = (Story: any) => {
+  const methods = useForm();
+  return (
+    <FormProvider {...methods}>
+      <Story />
+    </FormProvider>
+  );
+};
 
 const meta = {
     title: 'Base/NameInput',
     component: NameInput,
     tags: ['autodocs'],
+    decorators: [withFormDecorator],
 } as Meta<typeof NameInput>;
 
 export default meta;

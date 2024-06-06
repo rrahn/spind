@@ -9,6 +9,7 @@
 }
 
 .user-input label .user-input__text {
+  box-sizing: border-box;
   background-color: rgba(255, 255, 255);
   color: #5a5a5a;
   width: 100%;

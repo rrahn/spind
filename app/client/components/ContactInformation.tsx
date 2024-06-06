@@ -7,9 +7,9 @@ import "./ContactInformation.css"
 export type ContactInformationData = {
   forename: string,
   surname: string,
+  selectedClass: string,
   email: string,
   emailVerification: string,
-  selectedClass: string,
 }
 
 interface ContactInformationProps {
@@ -17,7 +17,7 @@ interface ContactInformationProps {
   onContactDataChange: (data: ContactInformationData) => void;
 }
 
-export default function ContactInformation({contactData, onContactDataChange}: ContactInformationProps) {
+export default function ContactInformation({contactData, onContactDataChange, ...props}: ContactInformationProps) {
 
   const classes = ['5N', '6N', '7A', '7B', '7N', '8A', '8B', '8N', '9A', '9B', '9N', '10A', '10B', '10N',  '11', '12'];
 
@@ -49,14 +49,14 @@ export default function ContactInformation({contactData, onContactDataChange}: C
       <p className='info-message'>Geben Sie Ihre Email-Adresse an.</p>
       <div className='flex-box--row'>
         <NameInput
-          inputId="email-1"
+          inputId="email"
           inputLabel="Email"
           inputValue={contactData.email}
           inputType="email"
           onNameChange={(email) => onContactDataChange({...contactData, email: email})}
         />
         <NameInput
-          inputId="email-2"
+          inputId="emailVerification"
           inputLabel="Email verifizieren"
           inputValue={contactData.emailVerification}
           inputType="email"
