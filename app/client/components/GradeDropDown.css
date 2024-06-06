@@ -2,21 +2,15 @@
   width: 100%;
   min-width: minmax(100px, auto);
   display: inline-block;
-  margin-right: 10px;
   position: relative;
 }
 
-/* Do not show the checkbox input */
-.dropdown.toggle > input {
-  display: none;
-}
-
 /* Style of the button showing the selection */
-.dropdown.toggle label {
-  display: block;
-  /* padding: 0 0 0 10px; */
-  padding: 20px 5px 5px 10px;
-  /* text-decoration: none; */
+.dropdown.toggle input {
+  display: flex;
+  box-sizing: border-box;  /* This is important to make the input field the same size as the label due to its padding */
+  width: 100%;
+  padding: 20px 5px 5px 10px;  /* This is the padding around the input text */
   line-height: 1.5rem;
   font-size: 1.2rem;
   cursor: pointer;
@@ -29,10 +23,20 @@
 
 /***************************************************/
 /* Basic styling of the arrow of the drop down box */
-.dropdown.toggle > label::after{
+
+.dropdown.toggle input + label{
+  position: absolute;
+  width: calc(100% - 10px); /* Reduces the width of the label by 10px to account for the 10px right shift relative to the toggle */
+  height: auto;
+  cursor: pointer;
+  left: 10px;
+  top: 20px;
+}
+
+.dropdown.toggle input + label::after{
   content: "";
   float: right;
-  margin: 0px 15px 0 0;
+  margin: 0px 10px 0 0;
   width: 0;
   height: 0;
   border-left: 5px solid transparent;
@@ -40,12 +44,12 @@
 }
 
 /* The arrow of the drop down button when the input is not checked */
-.dropdown.toggle > input:not(:checked) ~ label::after {
+.dropdown.toggle.hide-options > input + label::after {
   border-top: 10px solid #26b4b8;
 }
 
 /* The arrow of the drop down button when the input is checked */
-.dropdown.toggle > input:checked ~ label::after {
+.dropdown.toggle.show-options > input + label::after {
   border-bottom: 10px solid #26b4b8;
 }
 /***************************************************/
@@ -54,34 +58,36 @@
 /* Style of the container showing the list of elements to choose from */
 .dropdown ul {
   list-style-type: none;
-  display: block;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   position: absolute;
   width: 100%;
+  max-height: 240px;
+  overflow: scroll;
   border: 1px solid rgba(105, 105, 105, 0.397);
-  box-shadow: 0 8px 5px -5px rgba(0,0,0,0.5);
   border-radius: 5px;
-  overflow: hidden;
   z-index: 10;
+}
+
+.dropdown ul li {
+  height: 0;
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 300ms ease-in-out;
 }
 
 /* Style of the list of elements to choose from */
 .dropdown ul li a {
   display: block;
-  padding: 0 0 0 10px;
+  /* width: 100%; */
+  padding: 0 10px;
   line-height: 40px;
   font-size: 18px;
   color: #5a5a5a;
   background-color: rgb(255, 255, 255);
   box-shadow: 0 8px 5px -2px rgba(243, 241, 241, 0.3);
-}
-
-.dropdown ul li {
-  height: 0;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 300ms ease-in-out;
 }
 
 /* Make the top left and right corner of the first list element rounded */
@@ -96,29 +102,30 @@
 /* Style of the label when hovering over it or when the checkbox is checked */
 /* here we could control what should happen with the old value. */
 /* We can do something similar with the input control, only that we use a span to show the current value */
-/* .dropdown.toggle > label:hover,
-.dropdown.toggle > input:checked ~ label, */
-.dropdown a:hover {
+.dropdown ul li a:hover {
   background-color: #EEE;
   color: #666;
 }
 
-.dropdown li:first-child a:hover::before {
+.dropdown ul li:first-child a:hover::before {
   border-bottom-color: #EEE;
 }
 
 /* The size of the list elements when the input is checked and the list is expanded */
-.dropdown.toggle > input:checked ~ ul li {
+/* .dropdown.toggle > input:active ~ ul li, */
+.dropdown.toggle.show-options > input ~ ul li {
   height: 40px;
 }
 
 /* The expanded list starts 15px below the button */
-.dropdown.toggle > input:checked ~ ul {
+/* .dropdown.toggle > input:active ~ ul, */
+.dropdown.toggle.show-options > input ~ ul{
   margin-top: 15px;
 }
 
 /* The collapsed list of elements has no border */
-.dropdown.toggle > input:not(:checked) ~ ul {
+.dropdown.toggle.hide-options > input ~ ul {
+  margin-top: 15px;
   border: none;
 }
 
@@ -127,28 +134,25 @@
  * the dropdown input button.
  */
 
- .dropdown.toggle input ~ label.as-placeholder {
-  color: rgba(255, 255, 255, 0);
-  font-size: 40px;
- }
-
-.dropdown.toggle input ~ label span {
+.dropdown.toggle input + label span {
   color: rgba(255, 255, 255, 0);
   position: absolute;
-  left: 10px;
+  left: 0px;
   top: 0px;
   font-size: 40px;
   transition: 0.3s ease;
 }
 
-.dropdown.toggle input ~ label span.as-placeholder {
+.dropdown.toggle input:placeholder-shown + label span {
   color: #a6a6a6;
-  top: 20px;
+  top: 0px;
   font-size: 1.3rem;
+  line-height: 1.5rem;
 }
 
-.dropdown.toggle input ~ label span.as-side-note {
+.dropdown.toggle input:not(:placeholder-shown) + label span {
   color: #26b4b8;
+  top: -15px;
   font-size: 0.9rem;
   font-weight: 500;
 }

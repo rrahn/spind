@@ -1,14 +1,27 @@
+import { FormProvider, useForm } from "react-hook-form";
+import { ContactProvider } from "../contexts/ContactContext";
 import GradeDropDown from "./GradeDropDown";
 
 import { Meta, StoryObj } from "@storybook/react";
+import { JSX } from "react/jsx-runtime";
+import React from "react";
+
+const withFormDecorator = (Story: any) => {
+    const methods = useForm();
+    return (
+      <FormProvider {...methods}>
+        <Story />
+      </FormProvider>
+    );
+};
 
 const meta = {
     title: 'Base/GradeDropDown',
     component: GradeDropDown,
     tags: ['autodocs'],
-    decorators: [
+    decorators: [withFormDecorator,
         (Story) => (
-            <div style={{ width: '150px'}}>
+            <div style={{ width: '120px'}}>
                 <Story />
             </div>
         ),
