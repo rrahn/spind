@@ -1,18 +1,42 @@
+import { FormProvider, useForm } from "react-hook-form";
+import { ContactDispatchContext, ContactProvider } from "../contexts/ContactContext";
 import GradeDropDown from "./GradeDropDown";
 
 import { Meta, StoryObj } from "@storybook/react";
+import React, { useContext } from "react";
+
+const withFormDecorator = (Story: any) => {
+    const methods = useForm();
+    return (
+      <FormProvider {...methods}>
+        <Story />
+      </FormProvider>
+    );
+};
+
+const withContactProvider = (Story: any) => {
+  return (
+    <ContactProvider>
+      <Story />
+    </ContactProvider>
+  );
+}
 
 const meta = {
     title: 'Base/GradeDropDown',
     component: GradeDropDown,
     tags: ['autodocs'],
-    decorators: [
-        (Story) => (
-            <div style={{ width: '150px'}}>
-                <Story />
-            </div>
-        ),
-    ],
+    decorators: [(Story, { parameters }) => {
+      const contactDispatch = useContext(ContactDispatchContext);
+      const { forename="", surname="", selectedClass = "", email="", emailVerification="" } = parameters;
+      if (contactDispatch) {
+        contactDispatch({ type: 'update', contact: { forename, surname, selectedClass, email, emailVerification  } });
+      }
+      return (
+        <div style={{ width: '120px'}}>
+            <Story />
+        </div>
+      )}, withContactProvider, withFormDecorator],
 } as Meta<typeof GradeDropDown>;
 
 export default meta;
@@ -26,8 +50,10 @@ export const DefaultTest: Story = {
 };
 
 export const SelectedGrade: Story = {
+    parameters: {
+      selectedClass: '7A',
+    },
     args: {
       ...DefaultTest.args,
-      selectedGrade: '7A',
     },
 };

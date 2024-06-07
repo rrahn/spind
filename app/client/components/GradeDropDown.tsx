@@ -1,28 +1,36 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import './GradeDropDown.css';
+import { ContactContext } from "../contexts/ContactContext";
+import { useFormContext } from "react-hook-form";
 
 export interface GradeDropDownProps {
   /** The message of the input label */
   message: string;
   /** The list of selectable grades */
   grades: string[];
-  /** The selected grade */
-  selectedGrade: string;
-  /** Function to be called when grade is selected */
-  onSelectGrade: (grade: string) => void;
 }
 
-export default function GradeDropDown({message, grades, selectedGrade, onSelectGrade}: GradeDropDownProps) {
+export default function GradeDropDown({message, grades, ...props}: GradeDropDownProps) {
 
-  const [selection, setSelection] = useState(selectedGrade ? selectedGrade : message);
-  const [isChecked, setIsChecked] = useState(false);
-
+  const { register, setValue } = useFormContext();
+  const [showOptions, setShowOptions] = useState(false);
   const dropdownRef = useRef<HTMLInputElement>(null);
+  const [localGrade, setLocalGrade] = useState("");
+  const contactData = useContext(ContactContext);
 
+  useEffect(() => {
+    setValue('selectedClass', contactData.selectedClass, {
+      shouldValidate: false,
+      shouldDirty: false
+    });
+    setLocalGrade(contactData.selectedClass);
+  }, [contactData, setValue]);
+
+  // Effect to register mouse clicks outside of the dropdown menu.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsChecked(false);
+        setShowOptions(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -31,31 +39,42 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
     };
   }, []);
 
-  const handleSelect = (event: React.MouseEvent<HTMLAnchorElement>, grade: string) => {
-    onSelectGrade(grade);
-    setSelection(grade);
-    setIsChecked(false);
+  // Callback when a grade is selected in dropdown menu.
+  const handleSelect = async (event: React.MouseEvent<HTMLAnchorElement>, grade: string) => {
+    setLocalGrade(grade);
+
+    setValue('selectedClass', grade, {
+      shouldValidate: true,
+      shouldDirty: true
+    });
+    handleToggle(event);
   }
 
-  const handleToggle = () => {
-    setIsChecked(!isChecked);
+  // Callback to mimic a dropdown menu that can be toggled.
+  const handleToggle = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setShowOptions(!showOptions);
   }
 
-  const hasSelection = selection !== message;
+  const optionStyle = showOptions ? "show-options" : "hide-options";
+  const dropDownStyle = ["dropdown", "toggle", "flex-box--fixed-column-150px", optionStyle].join(' ');
 
   return (
-    <div ref={dropdownRef} className="dropdown toggle flex-box--fixed-column-150px">
+    <div ref={dropdownRef}
+         className={dropDownStyle}
+         onClick={handleToggle}>
       <input
         id="t1"
         data-testid="t1"
-        type="checkbox"
-        checked={isChecked}
-        value={selection}
-        required={true}
-        onChange={handleToggle}
-        />
-      <label htmlFor="t1" className={hasSelection ? 'as-text' : 'as-placeholder'}>{selection}
-        <span className={hasSelection ? 'as-side-note' : 'as-placeholder'}>{message}</span>
+        type="text"
+        readOnly={true}
+        placeholder=""
+        value={localGrade}
+        { ...register('selectedClass', {required: 'Bitte wählen sie eine Klasse'}) }
+      />
+      <label htmlFor="t1">
+        <span>{message}</span>
       </label>
       <ul>
         {grades.map((grade, idx) => <li key={idx}><a onClick={e => handleSelect(e, grade)}>{grade}</a></li>)}

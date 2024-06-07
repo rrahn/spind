@@ -1,0 +1,31 @@
+/* Tooltip container */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip-container .tooltip {
+  position: absolute;
+  top: 110%; /* Position below the input field */
+  left: 50%;
+  transform: translateX(-50%); /* Center the tooltip */
+  visibility: hidden;
+  width: 200px;
+  background-color: var(--danger-color); /* Red background */
+  color: #fff; /* White text */
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  /* left: 50%; */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show the tooltip text when you hover over the container */
+.tooltip-container:hover .tooltip.show-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
