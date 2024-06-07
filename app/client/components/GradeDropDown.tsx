@@ -1,22 +1,18 @@
-import React, { ChangeEvent, Fragment, useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import './GradeDropDown.css';
-import { ContactContext, ContactDispatchContext } from "../contexts/ContactContext";
-import { Controller, useController, useFormContext } from "react-hook-form";
+import { ContactContext } from "../contexts/ContactContext";
+import { useFormContext } from "react-hook-form";
 
 export interface GradeDropDownProps {
   /** The message of the input label */
   message: string;
   /** The list of selectable grades */
   grades: string[];
-  /** The selected grade */
-  selectedGrade?: string;
-  /** Function to be called when grade is selected */
-  onSelectGrade?: (grade: string) => void;
 }
 
-export default function GradeDropDown({message, grades, selectedGrade, onSelectGrade, ...props}: GradeDropDownProps) {
+export default function GradeDropDown({message, grades, ...props}: GradeDropDownProps) {
 
-  const { register, setValue, formState} = useFormContext();
+  const { register, setValue } = useFormContext();
   const [showOptions, setShowOptions] = useState(false);
   const dropdownRef = useRef<HTMLInputElement>(null);
   const [localGrade, setLocalGrade] = useState("");
@@ -28,7 +24,7 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
       shouldDirty: false
     });
     setLocalGrade(contactData.selectedClass);
-  }, []);
+  }, [contactData, setValue]);
 
   // Effect to register mouse clicks outside of the dropdown menu.
   useEffect(() => {

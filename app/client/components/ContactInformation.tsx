@@ -62,8 +62,6 @@ export default function ContactInformation({contactData, onContactDataChange, ..
         <GradeDropDown
           message={"Klasse"}
           grades={classes}
-          selectedGrade={contactData.selectedClass}
-          onSelectGrade={(c: string) => onContactDataChange({...contactData, selectedClass: c})}
         />
         </div>
       <p className='info-message'>Geben Sie Ihre Email-Adresse an.</p>
