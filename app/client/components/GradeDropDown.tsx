@@ -19,9 +19,18 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
   const { register, setValue, formState} = useFormContext();
   const [showOptions, setShowOptions] = useState(false);
   const dropdownRef = useRef<HTMLInputElement>(null);
-  const contact = useContext(ContactContext);
-  const dispatchContact = useContext(ContactDispatchContext);
+  const [localGrade, setLocalGrade] = useState("");
+  const contactData = useContext(ContactContext);
 
+  useEffect(() => {
+    setValue('selectedClass', contactData.selectedClass, {
+      shouldValidate: false,
+      shouldDirty: false
+    });
+    setLocalGrade(contactData.selectedClass);
+  }, []);
+
+  // Effect to register mouse clicks outside of the dropdown menu.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -34,10 +43,9 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
     };
   }, []);
 
+  // Callback when a grade is selected in dropdown menu.
   const handleSelect = async (event: React.MouseEvent<HTMLAnchorElement>, grade: string) => {
-    if (dispatchContact !== undefined) {
-      dispatchContact({ type: 'update', contact: {...contact, selectedClass: grade}});
-    }
+    setLocalGrade(grade);
 
     setValue('selectedClass', grade, {
       shouldValidate: true,
@@ -46,6 +54,7 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
     handleToggle(event);
   }
 
+  // Callback to mimic a dropdown menu that can be toggled.
   const handleToggle = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -65,7 +74,7 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
         type="text"
         readOnly={true}
         placeholder=""
-        value={contact.selectedClass}
+        value={localGrade}
         { ...register('selectedClass', {required: 'Bitte wählen sie eine Klasse'}) }
       />
       <label htmlFor="t1">
@@ -74,10 +83,6 @@ export default function GradeDropDown({message, grades, selectedGrade, onSelectG
       <ul>
         {grades.map((grade, idx) => <li key={idx}><a onClick={e => handleSelect(e, grade)}>{grade}</a></li>)}
       </ul>
-      {/* Display validation error message */}
-        {/* {formState.errors.selectedClass && (
-          <span>{String(formState.errors.selectedClass.message)}</span>
-        )} */}
     </div>
   );
 }
