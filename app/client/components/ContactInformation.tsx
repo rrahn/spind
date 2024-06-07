@@ -45,7 +45,6 @@ export default function ContactInformation({contactData, onContactDataChange, ..
           <NameInput
             inputId="forename"
             inputLabel="Vorname"
-            inputValue={contactData.forename}
             inputType="text"
             options={nameValidationOption}
             error={errors.forename as FieldError | undefined}
@@ -55,7 +54,6 @@ export default function ContactInformation({contactData, onContactDataChange, ..
           <NameInput
             inputId="surname"
             inputLabel="Nachname"
-            inputValue={contactData.surname}
             inputType="text"
             options={nameValidationOption}
             error={errors.surname as FieldError | undefined}
@@ -74,7 +72,6 @@ export default function ContactInformation({contactData, onContactDataChange, ..
           <NameInput
             inputId="email"
             inputLabel="Email"
-            inputValue={contactData.email}
             inputType="email"
             error={errors.email as FieldError | undefined}
           />
@@ -83,7 +80,6 @@ export default function ContactInformation({contactData, onContactDataChange, ..
           <NameInput
             inputId="emailVerification"
             inputLabel="Email verifizieren"
-            inputValue={contactData.emailVerification}
             inputType="email"
             options={{validate: (value) => value === primaryEmail || 'Email stimmt nicht überein'}}
             error={errors.emailVerification as FieldError | undefined}

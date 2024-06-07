@@ -9,19 +9,15 @@ export interface NameInputProps {
   inputId: string;
   /** The label of the input field*/
   inputLabel: string;
-  /** The value of the input field */
-  inputValue: string;
   /** The type of the input field */
   inputType: string;
-  /** Function to be called when input field is changed */
-  onNameChange?: (name: string) => void;
   /** Options for the input fields when registering to the react-hook-form (e.g. validation rules).*/
   options?: RegisterOptions;
   /** An optional field error in case validation was not successful. */
   error?: FieldError;
 }
 
-export default function NameInput({inputId, inputLabel, inputValue, inputType, ...props}: NameInputProps) {
+export default function NameInput({inputId, inputLabel, inputType, ...props}: NameInputProps) {
 
   const { register, setValue } = useFormContext();
   const contactData = useContext(ContactContext);
@@ -33,7 +29,7 @@ export default function NameInput({inputId, inputLabel, inputValue, inputType, .
       shouldValidate: false,
       shouldDirty: false,
     });
-  }, []);
+  }, [contactData, setValue, inputId]);
 
   return (
     <Fragment>
