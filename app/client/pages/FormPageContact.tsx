@@ -3,14 +3,13 @@ import { useContext } from "react";
 import FormPageNavigation from "./FormPageNavigation";
 import { useNavigate } from "react-router-dom";
 import ContactInformation, { ContactInformationData } from "../components/ContactInformation";
-import { ContactContext, ContactDispatchContext } from "../contexts/ContactContext";
+import { ContactDispatchContext } from "../contexts/ContactContext";
 import { StepperDispatchContext } from "../contexts/StepperContext";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 
 export default function FormPageContact() {
 
   const methods = useForm<ContactInformationData>();
-  const contact = useContext(ContactContext);
   const dispatchContact = useContext(ContactDispatchContext);
   const dispatchStepper = useContext(StepperDispatchContext);
 
@@ -41,10 +40,7 @@ export default function FormPageContact() {
     <div>
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>
-        <ContactInformation
-          contactData={contact}
-          onContactDataChange={handleContactUpdate}
-          />
+        <ContactInformation />
         <FormPageNavigation onNext={() => {}}/>
         </form>
       </FormProvider>

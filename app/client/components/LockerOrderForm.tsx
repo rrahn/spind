@@ -20,10 +20,7 @@ export default function LockerOrderForm({handleSubmit}: LockerOrderFormProps) {
 
   return (
     <form className="flex-box--column" onSubmit={(e) => { e.preventDefault(); log(); handleSubmit(); }}>
-      <ContactInformation
-        contactData={contactData}
-        onContactDataChange={(data: ContactInformationData) => setContactData(data)}
-      />
+      <ContactInformation />
       <FloorPlanCarousel/>
       {/* Choose payment option */}
       <input

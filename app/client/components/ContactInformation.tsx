@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useContext } from "react";
 import NameInput from "./NameInput";
 import GradeDropDown from "./GradeDropDown";
 
 import "./ContactInformation.css"
 import "./Tooltip.css"
 import { FieldError, useFormContext } from "react-hook-form";
+import { ContactContext } from "../contexts/ContactContext";
 
 export type ContactInformationData = {
   forename: string,
@@ -14,11 +15,6 @@ export type ContactInformationData = {
   emailVerification: string,
 }
 
-interface ContactInformationProps {
-  contactData: ContactInformationData;
-  onContactDataChange: (data: ContactInformationData) => void;
-}
-
 const nameValidationOption = {
   pattern: {
     value: /^[a-zA-ZÀ-ž\s\-]*$/,
@@ -26,9 +22,10 @@ const nameValidationOption = {
   },
 };
 
-export default function ContactInformation({contactData, onContactDataChange, ...props}: ContactInformationProps) {
+export default function ContactInformation() {
 
   const { watch, formState: { errors } } = useFormContext();
+  const contactData = useContext(ContactContext);
 
   const classes = ['5N', '6N', '7A', '7B', '7N', '8A', '8B', '8N', '9A', '9B', '9N', '10A', '10B', '10N',  '11', '12'];
 
