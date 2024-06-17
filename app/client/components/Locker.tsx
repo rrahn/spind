@@ -70,13 +70,6 @@ export default function Locker({id}: LockerProps) {
    * @param compartmentId The id of the selected compartment
    * @returns void
    **/
-  function handleCompartmentSelection(compartmentId: number) {
-    const lockerId = {locker: id, compartment: compartmentId} as LockerId;
-    if (dispatch !== undefined) {
-      dispatch({ type: 'select', lockerId: lockerId});
-    }
-  }
-
   const handleReserve = async (compartmentId: number) => {
     if (compartmentId === null) return;
     const lockerId = {locker: id, compartment: compartmentId} as LockerId;
