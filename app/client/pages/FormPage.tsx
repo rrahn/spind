@@ -5,6 +5,7 @@ import { ContactProvider } from "../contexts/ContactContext";
 import { LockerSelectionProvider } from "../contexts/LockerSelectionContext";
 import { useEffect } from "react";
 import { StepperContextProvider } from "../contexts/StepperContext";
+import { SocketProvider } from "../contexts/SocketContext";
 
 import "./FormPage.css"
 
@@ -21,11 +22,13 @@ export default function FormPage() {
       <FormPageHeader />
       <StepperContextProvider>
       <FormPageStatusBar />
-        <ContactProvider>
-          <LockerSelectionProvider>
-            <Outlet />
-          </LockerSelectionProvider>
-        </ContactProvider>
+        <SocketProvider>
+          <ContactProvider>
+            <LockerSelectionProvider>
+              <Outlet />
+            </LockerSelectionProvider>
+          </ContactProvider>
+        </SocketProvider>
       </StepperContextProvider>
     </div>
   );
