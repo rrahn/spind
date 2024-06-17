@@ -1,6 +1,6 @@
 const waitPort = require('wait-port');
 const fs = require('fs');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
 const {
     MYSQL_HOST: HOST,
@@ -14,6 +14,42 @@ const {
 } = process.env;
 
 let pool;
+
+async function createLockerTable() {
+
+    const sql = 'CREATE TABLE IF NOT EXISTS locker_table(UnitId INT NOT NULL, \
+                                                         CompartmentId INT NOT NULL, \
+                                                         LockType ENUM("Key", "Combination"), \
+                                                         Color varchar(255), \
+                                                         State ENUM("Free", "Occupied", "OutOfOrder", "Reserved") NOT NULL, \
+                                                         PRIMARY KEY(UnitId, CompartmentId) \
+                                                         ) DEFAULT CHARSET utf8mb4';
+    await pool.query({sql});
+    console.log(`Successfully created locker table`);
+}
+
+async function createLockerUnitTable() {
+    const sql = 'CREATE TABLE IF NOT EXISTS locker_unit_table(UnitId INT NOT NULL, \
+                                                              FloorId INT NOT NULL, \
+                                                              TopLeftX INT NOT NULL, \
+                                                              TopLeftY INT NOT NULL, \
+                                                              BottomRightX INT NOT NULL, \
+                                                              BottomRightY INT NOT NULL, \
+                                                              PRIMARY KEY(UnitId) \
+                                                              ) DEFAULT CHARSET utf8mb4';
+    await pool.query({sql});
+    console.log(`Successfully created locker unit table`);
+}
+
+async function createFloorMapTable() {
+    const sql = 'CREATE TABLE IF NOT EXISTS floor_map_table(FloorId INT NOT NULL, \
+                                                            ImageSource VARCHAR(255) NOT NULL, \
+                                                            ImageDescription VARCHAR(255) NOT NULL, \
+                                                            PRIMARY KEY(FloorId) \
+                                                            ) DEFAULT CHARSET utf8mb4';
+    await pool.query({sql});
+    console.log(`Successfully created floor map table`);
+}
 
 async function init() {
     const host = HOST_FILE ? fs.readFileSync(HOST_FILE) : HOST;
@@ -37,138 +73,50 @@ async function init() {
         charset: 'utf8mb4',
     });
 
-    const promiseCreateLockerTbl = new Promise((acc, rej) => {
-        pool.query(
-            'CREATE TABLE IF NOT EXISTS locker_table(UnitId INT NOT NULL, \
-                                                     CompartmentId INT NOT NULL, \
-                                                     LockType ENUM("Key", "Combination"), \
-                                                     Color varchar(255), \
-                                                     State ENUM("Free", "Occupied", "OutOfOrder", "Reserved") NOT NULL, \
-                                                     PRIMARY KEY(UnitId, CompartmentId) \
-                                                    ) DEFAULT CHARSET utf8mb4',
-            (err) => {
-                if (err) return rej(err);
+    const promiseCreateLockerTbl = createLockerTable();
 
-                console.log(`Successfully created locker table`);
-                acc();
-            },
-        );
-    });
+    const promiseCreateLockerUnitTable = createLockerUnitTable();
 
-    const promiseCreateLockerUnitTable = new Promise((acc, rej) => {
-        pool.query(
-            'CREATE TABLE IF NOT EXISTS locker_unit_table(UnitId INT NOT NULL, \
-                                                          FloorId INT NOT NULL, \
-                                                          TopLeftX INT NOT NULL, \
-                                                          TopLeftY INT NOT NULL, \
-                                                          BottomRightX INT NOT NULL, \
-                                                          BottomRightY INT NOT NULL, \
-                                                          PRIMARY KEY(UnitId) \
-            ) DEFAULT CHARSET utf8mb4',
-            (err) => {
-                if (err) return rej(err);
-
-                console.log(`Successfully created locker unit table`);
-                acc();
-            }
-        );
-    });
-
-    const promiseCreateFloorMapTable = new Promise((acc, rej) => {
-        pool.query(
-            'CREATE TABLE IF NOT EXISTS floor_map_table(FloorId INT NOT NULL, \
-                                                        ImageSource VARCHAR(255) NOT NULL, \
-                                                        ImageDescription VARCHAR(255) NOT NULL, \
-                                                        PRIMARY KEY(FloorId) \
-            ) DEFAULT CHARSET utf8mb4',
-            (err) => {
-                if (err) return rej(err);
-
-                console.log(`Successfully created floor map table`);
-                acc();
-            }
-        )
-    });
+    const promiseCreateFloorMapTable = createFloorMapTable();
 
     return Promise.all([promiseCreateLockerTbl, promiseCreateLockerUnitTable, promiseCreateFloorMapTable]);
 }
 
 async function teardown() {
-    return new Promise((acc, rej) => {
-        pool.end(err => {
-            if (err) rej(err);
-            else acc();
-        });
-    });
+    await pool.end();
 }
 
 async function getFloorMaps() {
-    return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM floor_map_table', (err, rows) => {
-            if (err) return rej(err); // catch case
-            acc(// then case - do not need to modify the locker object.
-                rows.map(item =>
-                    Object.assign({}, {
-                        level: item.FloorId,
-                        image: item.ImageSource,
-                        title: item.ImageDescription,
-                    }),
-                ),
-            );
-        });
-    });
+
+    const [rows] = await pool.query('SELECT * FROM floor_map_table');
+    return rows.map(item =>
+        Object.assign({}, {
+            level: item.FloorId,
+            image: item.ImageSource,
+            title: item.ImageDescription,
+        }),
+    );
 }
 
 async function getLockerUnits() {
-    return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM locker_unit_table', (err, rows) => {
-            if (err) return rej(err); // catch case
-            acc(// then case - do not need to modify the locker object.
-                rows.map(item =>
-                    Object.assign({}, item),
-                ),
-            );
-        });
-    });
+    const [rows] = await pool.query('SELECT * FROM locker_unit_table');
+    return rows.map(item => Object.assign({}, item));
 }
 
 async function getLockerUnitsOnFloor(floorId) {
-    return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM locker_unit_table WHERE FloorId = ?', [floorId], (err, rows) => {
-            if (err) return rej(err); // catch case
-            acc(// then case - do not need to modify the locker object.
-                rows.map(item =>
-                    Object.assign({}, item),
-                ),
-            );
-        });
-    });
+    const [rows] = await pool.query('SELECT * FROM locker_unit_table WHERE FloorId = ?', [floorId]);
+    return rows.map(item => Object.assign({}, item));
 }
 
 async function getLockers() {
-    return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM locker_table', (err, rows) => {
-            if (err) return rej(err); // catch case
-            acc(// then case - do not need to modify the locker object.
-                rows.map(item =>
-                    Object.assign({}, item),
-                ),
-            );
-        });
-    });
+    const [rows] = await pool.query('SELECT * FROM locker_table');
+    return rows.map(item => Object.assign({}, item));
 }
 
 async function getLockersForUnit(unitId) {
-    return new Promise((acc, rej) => {
-        pool.query('SELECT * FROM locker_table WHERE UnitId = ?', [unitId], (err, rows) => {
-            if (err) return rej(err); // catch case
-            acc(// then case - do not need to modify the locker object.
-                rows.map(item =>
-                    Object.assign({}, item),
-                ),
-            );
-        });
-    });
+    const [rows] = await pool.query('SELECT * FROM locker_table WHERE UnitId = ?', [unitId]);
+    return rows.map(item => Object.assign({}, item));
+}
 }
 
 // async function getLockers() {
