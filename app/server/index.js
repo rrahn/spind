@@ -1,10 +1,14 @@
 const express = require('express');
+const http = require('http');
 const db = require('./models/database.js');
+const { Server } = require("socket.io");
+
 const getFloorMaps = require('./routes/getFloorMaps.js');
 const getLockerUnits = require('./routes/getLockerUnits.js');
 const getLockerUnitsOnFloor = require('./routes/getLockerUnitsOnFloor.js');
 const getLockers = require('./routes/getLockers.js');
 const getLockersForUnit = require('./routes/getLockersForUnit.js');
+const reserveLocker = require('./routes/reserveLocker.js');
 // const multer = require('multer');
 // const cors = require('cors')
 
@@ -16,6 +20,7 @@ const port = process.env.PORT || 3000;
 const distDir = path.join(__dirname, '..', 'dist');
 const publicDir = path.join(__dirname, '..', 'public');
 const htmlIndexFile = path.join(distDir, 'index.html'); // NEW
+const url = 'http://localhost:3000';
 
 console.log('Dist dir: ' + distDir);
 console.log('Base dir: ' + __dirname);
@@ -24,6 +29,14 @@ console.log('Index HTML file: ' + htmlIndexFile);
 /** Setup the express server application */
 
 const app = express(); // Create an Express server
+const server = http.createServer(app); // Create a HTTP server
+
+const io = new Server(server, {
+  connectionStateRecovery: true,
+  cors: {
+      origin: url,
+  },
+});
 
 // app.use(express.json()); // Enable JSON parsing for request bodies
 
@@ -79,6 +92,7 @@ app.get('/api/getLockerUnits', getLockerUnits);
 app.get('/api/getLockerUnits/floor/:floorId', getLockerUnitsOnFloor);
 app.get('/api/getLockers', getLockers);
 app.get('/api/getLockers/unit/:unitId', getLockersForUnit);
+app.post('/api/reserveLocker/unit/:unitId/compartment/:compartmentId', reserveLocker(io));
 
 // app.get('/api/image', (req, res) => {
 //     console.log('Sent image from path ' + FloorPlanData[0].image);
@@ -111,7 +125,8 @@ app.get('/api/getLockers/unit/:unitId', getLockersForUnit);
 // Start the server
 
 db.init().then(() => {
-  app.listen(port, () => {
+
+  server.listen(port, () => {
     console.log('######################');
     console.log('App listening on port: ' + port);
     console.log('######################');
