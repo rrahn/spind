@@ -8,8 +8,8 @@ import { SocketContext } from '../contexts/SocketContext';
 interface LockerProps {
   /** A unique identifier to describe the locker */
   id: number;
-  /** Type of the locker*/
-  // lockType: LockingMechanism;
+  /** The handler invoked when a locker is selected. */
+  onSelectLocker?: () => void;
 }
 
 enum LockerCompartmentState {
@@ -25,7 +25,7 @@ interface LockerCompartment {
   state: LockerCompartmentState;
 }
 
-export default function Locker({id}: LockerProps) {
+export default function Locker({id, onSelectLocker}: LockerProps) {
 
   const selectedLocker = useContext(LockerSelectionContext);
   const socket = useContext(SocketContext);
@@ -94,6 +94,11 @@ export default function Locker({id}: LockerProps) {
       // Update locker status locally after successful reservation
       if (dispatch !== undefined) {
         dispatch({ type: 'select', lockerId: lockerId});
+      }
+
+      // Notify the parent component that a locker has been selected
+      if (onSelectLocker !== undefined) {
+        onSelectLocker();
       }
 
     } catch (error) {

@@ -16,9 +16,11 @@ export interface FloorPlanProps {
   lockerUnitMap: LockerModel[];
   /** Whether this floor plan is selected and shall be shown */
   isSelected: boolean;
+  /** The handler invoked when a locker is selected. */
+  onSelectLocker?: () => void;
 }
 
-export default function FloorPlan({floorPlan, lockerUnitMap, isSelected} : FloorPlanProps) {
+export default function FloorPlan({floorPlan, lockerUnitMap, isSelected, onSelectLocker} : FloorPlanProps) {
 
   const currentLocker = useContext(LockerSelectionContext);
 
@@ -100,7 +102,7 @@ export default function FloorPlan({floorPlan, lockerUnitMap, isSelected} : Floor
         <LockerModalDialog
           openModal={selectedArea !== null}
           closeModal={() => setSelectedArea(null)}>
-          <Locker key={selectedArea} id={selectedLockerUnit.id}/>
+          <Locker key={selectedArea} id={selectedLockerUnit.id} onSelectLocker={onSelectLocker}/>
         </LockerModalDialog>
       }
     </div>

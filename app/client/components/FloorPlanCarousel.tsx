@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {CiSquareChevUp, CiSquareChevDown} from 'react-icons/ci';
 
-import './FloorPlanCarousel.css';
 import FloorPlan from './FloorPlan';
 import { LockerModel } from './LockerModel';
+
+import './FloorPlanCarousel.css';
+import './Tooltip.css';
 
 export interface FloorMap {
   level: number;
@@ -11,7 +13,14 @@ export interface FloorMap {
   title: string;
 }
 
-export default function FloorPlanCarousel() {
+interface FloorPlanCarouselProps {
+  /** The handler invoked when a locker is selected. */
+  onSelectLocker?: () => void;
+  /** An optional error object to display an error message. */
+  errorMsg?: string;
+}
+
+export default function FloorPlanCarousel(props: FloorPlanCarouselProps) {
 
   const [selectedFloorIdx, setSelectedFloorIdx] = useState(0);
   const [floorMaps, setFloorMaps] = useState<Array<FloorMap> | null>(null);
@@ -68,6 +77,8 @@ export default function FloorPlanCarousel() {
   buttonUpClass += isUpDisabled ? " floor-carousel__nav__button--disabled" : " floor-carousel__nav__button--enabled";
   buttonDownClass += isDownDisabled ? " floor-carousel__nav__button--disabled" : " floor-carousel__nav__button--enabled";
 
+  const invalidInput = props.errorMsg ? 'invalid-input' : '';
+
   function logLoading() {
     console.log('Loading component...');
     return true;
@@ -86,10 +97,10 @@ export default function FloorPlanCarousel() {
     return (
       <div>
         <p className='info-message'>Suchen sie sich einen Spind aus.</p>
-        <div className="floor-carousel">
+        <div className={["floor-carousel", "tooltip-container", invalidInput].join(" ")}>
           {
             floorMaps.map((floorPlan, idx) =>
-              <FloorPlan key={floorPlan.level} floorPlan={floorPlan} lockerUnitMap={lockerUnitMap} isSelected={selectedFloorIdx === idx}/>)
+              <FloorPlan key={floorPlan.level} floorPlan={floorPlan} lockerUnitMap={lockerUnitMap} isSelected={selectedFloorIdx === idx} onSelectLocker={props.onSelectLocker}/>)
           }
           <div className="floor-carousel__nav">
               <CiSquareChevUp className={buttonUpClass}
@@ -98,6 +109,9 @@ export default function FloorPlanCarousel() {
                                 onClick={handleClickNavDown}/>
           </div>
           <span>{floorMaps[selectedFloorIdx].title}</span>
+         {props.errorMsg &&
+           <span className={["tooltip", props.errorMsg ? "show-tooltip" : ""].join(" ")}>{props.errorMsg}</span>
+          }
         </div>
       </div>
     )
