@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 
 import FormPageNavigation from "./FormPageNavigation";
 import { useNavigate } from "react-router-dom";
@@ -20,12 +20,6 @@ export default function FormPageContact() {
       dispatchStepper({ type: 'next' });
     }
     navigate('/locker');
-  }
-
-  function handleContactUpdate(updatedContact: ContactInformationData) {
-    if (dispatchContact !== undefined) {
-      dispatchContact({ type: 'update', contact: updatedContact});
-    }
   }
 
   const onSubmit: SubmitHandler<ContactInformationData> = (data) => {

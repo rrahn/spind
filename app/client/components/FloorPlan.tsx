@@ -99,9 +99,9 @@ export default function FloorPlan({floorPlan, lockerUnitMap, isSelected} : Floor
       {/* Show modal when an area on the image map was selected. */
         <LockerModalDialog
           openModal={selectedArea !== null}
-          closeModal={() => setSelectedArea(null)}
-          children={<Locker key={selectedArea} id={selectedLockerUnit.id}/>}
-        />
+          closeModal={() => setSelectedArea(null)}>
+          <Locker key={selectedArea} id={selectedLockerUnit.id}/>
+        </LockerModalDialog>
       }
     </div>
   );

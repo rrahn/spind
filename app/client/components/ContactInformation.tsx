@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import NameInput from "./NameInput";
 import GradeDropDown from "./GradeDropDown";
 
@@ -17,7 +17,7 @@ export type ContactInformationData = {
 
 const nameValidationOption = {
   pattern: {
-    value: /^[a-zA-ZÀ-ž\s\-]*$/,
+    value: /^[a-zA-ZÀ-ž\s-]*$/,
     message: 'Nur lateinische Buchstaben, Bindestrich und Leerzeichen sind erlaubt.',
   },
 };

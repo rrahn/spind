@@ -3,7 +3,7 @@ import FormPageHeader from "./FormPageHeader";
 import FormPageStatusBar from "./FormPageStatusBar";
 import { ContactProvider } from "../contexts/ContactContext";
 import { LockerSelectionProvider } from "../contexts/LockerSelectionContext";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { StepperContextProvider } from "../contexts/StepperContext";
 import { SocketProvider } from "../contexts/SocketContext";
 

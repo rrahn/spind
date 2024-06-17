@@ -1,7 +1,6 @@
-import { register } from "module";
 import "./NameInput.css";
 import { FieldError, RegisterOptions, useFormContext } from "react-hook-form";
-import { Fragment, useContext, useEffect } from "react";
+import React ,{ Fragment, useContext, useEffect } from "react";
 import { ContactContext } from "../contexts/ContactContext";
 
 export interface NameInputProps {

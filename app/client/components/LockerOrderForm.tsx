@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import ContactInformation, { ContactInformationData } from './ContactInformation';
+import React from 'react';
+import ContactInformation from './ContactInformation';
 import './LockerOrderForm.css';
 import FloorPlanCarousel from './FloorPlanCarousel';
 
@@ -10,16 +10,8 @@ export interface LockerOrderFormProps {
 
 export default function LockerOrderForm({handleSubmit}: LockerOrderFormProps) {
 
-  const [contactData, setContactData] = useState<ContactInformationData>({} as ContactInformationData);
-
-  // const hasNoInvalidInput = contactData.forename && contactData.surname && contactData.email && contactData.selectedClass;
-
-  function log() {
-    console.log("submitted data: name=" + contactData.forename + " " + contactData.surname + ", email=" + contactData.email + ", class=" + contactData.selectedClass);
-  }
-
   return (
-    <form className="flex-box--column" onSubmit={(e) => { e.preventDefault(); log(); handleSubmit(); }}>
+    <form className="flex-box--column" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
       <ContactInformation />
       <FloorPlanCarousel/>
       {/* Choose payment option */}

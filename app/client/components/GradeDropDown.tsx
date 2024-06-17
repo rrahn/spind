@@ -10,7 +10,7 @@ export interface GradeDropDownProps {
   grades: string[];
 }
 
-export default function GradeDropDown({message, grades, ...props}: GradeDropDownProps) {
+export default function GradeDropDown({message, grades }: GradeDropDownProps) {
 
   const { register, setValue } = useFormContext();
   const [showOptions, setShowOptions] = useState(false);

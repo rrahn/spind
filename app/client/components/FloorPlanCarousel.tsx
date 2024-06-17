@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {CiSquareChevUp, CiSquareChevDown} from 'react-icons/ci';
 
 import './FloorPlanCarousel.css';
 import FloorPlan from './FloorPlan';
-import { LockerSelectionProvider } from '../contexts/LockerSelectionContext';
 import { LockerModel } from './LockerModel';
 
 export interface FloorMap {

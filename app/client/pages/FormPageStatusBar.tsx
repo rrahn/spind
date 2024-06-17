@@ -1,7 +1,6 @@
-import { Link } from "react-router-dom";
 import Stepper from "../components/Stepper";
 import { StepperContext } from "../contexts/StepperContext";
-import { useContext } from "react";
+import React, { useContext } from "react";
 
 export default function FormPageStatusBar() {
 

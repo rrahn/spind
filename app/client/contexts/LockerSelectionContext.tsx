@@ -1,4 +1,4 @@
-import { Dispatch, createContext, useReducer } from "react";
+import React, { Dispatch, createContext, useReducer } from "react";
 import { LockerId } from "../components/LockerCompartment";
 
 /** Provides context to the currently selected locker */

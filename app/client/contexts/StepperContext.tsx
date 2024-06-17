@@ -1,4 +1,4 @@
-import { Dispatch, createContext, useReducer, ReactNode } from "react";
+import React, { Dispatch, createContext, useReducer, ReactNode } from "react";
 
 export interface StepState {
   /** The step number */

@@ -1,4 +1,4 @@
-import { Fragment } from 'react/jsx-runtime';
+import React, { Fragment } from 'react/jsx-runtime';
 import './Stepper.css'
 
 interface StepperProps {
@@ -10,7 +10,7 @@ function Step(step: number, activeStep: number, isFirstStep: boolean = false) {
   let circleClass = step < activeStep ? "stepper--circle stepper--circle__passed" : "stepper--circle";
   circleClass = step === activeStep ? "stepper--circle stepper--circle__active" : circleClass;
 
-  let lineClass = step <= activeStep ? "stepper--line stepper--line__passed" : "stepper--line";
+  const lineClass = step <= activeStep ? "stepper--line stepper--line__passed" : "stepper--line";
 
   return (
     <Fragment>
@@ -20,7 +20,7 @@ function Step(step: number, activeStep: number, isFirstStep: boolean = false) {
   )
 }
 
-export default function({currentStep, totalSteps}: StepperProps) {
+export default function Stepper({currentStep, totalSteps}: StepperProps) {
 
   const Steps = Array.from({length: totalSteps}, (_, i) => {
     return Step(i, currentStep, i === 0);

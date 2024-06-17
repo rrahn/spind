@@ -1,4 +1,4 @@
-import { Dispatch, createContext, useReducer, ReactNode } from "react";
+import React, { Dispatch, createContext, useReducer, ReactNode } from "react";
 import { ContactInformationData } from "../components/ContactInformation";
 
 /** Provides context to the currently selected locker */
