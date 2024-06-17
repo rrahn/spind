@@ -1,8 +1,9 @@
-import { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import LockerCompartment, { LockerId } from './LockerCompartment';
 import './Locker.css';
 import { LockingMechanism } from './LockerModel';
 import { LockerSelectionContext, LockerSelectionDispatchContext } from '../contexts/LockerSelectionContext';
+import { SocketContext } from '../contexts/SocketContext';
 
 interface LockerProps {
   /** A unique identifier to describe the locker */
@@ -27,21 +28,42 @@ interface LockerCompartment {
 export default function Locker({id}: LockerProps) {
 
   const selectedLocker = useContext(LockerSelectionContext);
+  const socket = useContext(SocketContext);
   const dispatch = useContext(LockerSelectionDispatchContext);
 
-  const [lockerUnit, setLockerUnit] = useState<Array<LockerCompartment> | null>();
+  const [lockerUnit, setLockerUnit] = useState<Array<LockerCompartment>>([]);
 
-  useEffect(() => {
-    const fetchData = async (id: number) => {
+  const fetchData = useCallback(async (id: number) => {
+    try {
+
       const response = await fetch('/api/getLockers/unit/' + id);
       const data = await response.json();
       // console.log('Received locker compartments: %j', data);
       setLockerUnit(data);
-    };
-    fetchData(id);
+    } catch (error) {
+      console.error('Failed to fetch locker compartments', error);
+    }
+  }, [lockerUnit, id]);
 
-    return () => {};
-  }, [id]);
+  useEffect(() => {
+    fetchData(id);
+  }, []);
+
+  useEffect(() => {
+
+    const onLockerUpdate = async (lockerId: LockerId) => {
+      console.log('Received locker update: %j', lockerId);
+      console.log('Current id: ' + id);
+      if (lockerId.locker === -1) return; // nothing to do since, the update is not for this locker unit
+      await fetchData(id);
+
+    };
+
+    socket.on('lockerUpdate', onLockerUpdate);
+    return () => {
+      socket.off('lockerUpdate', onLockerUpdate);
+    }
+  }, [socket, id, lockerUnit]);
 
   /**
    * Handles the selection of a compartment
@@ -55,6 +77,38 @@ export default function Locker({id}: LockerProps) {
     }
   }
 
+  const handleReserve = async (compartmentId: number) => {
+    if (compartmentId === null) return;
+    const lockerId = {locker: id, compartment: compartmentId} as LockerId;
+
+    try {
+      // First send a post request to reserve the selected locker.
+      const postData = { newLocker: lockerId, oldLocker: selectedLocker };
+      // TODO: Only call reserve locker API. No need to encode the reserved locker data inside the URL.
+      const response = await fetch('/api/reserveLocker/unit/'+ id + '/compartment/' + compartmentId, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ postData }),
+      });
+
+      // Check if the request was successful
+      if (!response.ok) {
+        throw new Error('Failed to reserve locker');
+      }
+
+      // Update locker status locally after successful reservation
+      if (dispatch !== undefined) {
+        dispatch({ type: 'select', lockerId: lockerId});
+      }
+
+    } catch (error) {
+      console.error('Failed to reserve locker', error);
+      // TODO: Handle error, e.g., show a message to the user
+    }
+  };
+
   // Create the locker compartments from the locker capacity.
   // Two types of lockers are supported: key (3 by 3) and digit (5 by 2).
   const lockerCapacity = lockerUnit?.length;
@@ -65,7 +119,7 @@ export default function Locker({id}: LockerProps) {
               lockType={compartment.kind}
               isAvailable={compartment.state === LockerCompartmentState.FREE ? true : false}
               isSelected={(selectedLocker.compartment === compartment.id && selectedLocker.locker === id) ? true : false}
-              onClick={handleCompartmentSelection}/>;
+              onClick={handleReserve}/>;
   });
 
   const lockType = (lockerUnit?.length === 9) ? 'key' : 'digit';
