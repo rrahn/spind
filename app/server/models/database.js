@@ -51,6 +51,18 @@ async function createFloorMapTable() {
     console.log(`Successfully created floor map table`);
 }
 
+async function createReservationTable() {
+    const sql = 'CREATE TABLE IF NOT EXISTS reservation_table(Id INT AUTO_INCREMENT, \
+                                                              UnitId INT, \
+                                                              CompartmentId INT, \
+                                                              ReservationTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, \
+                                                              PRIMARY KEY(Id), \
+                                                              FOREIGN KEY(UnitId, CompartmentId) REFERENCES locker_table(UnitId, CompartmentId) ON DELETE CASCADE \
+                                                              ) DEFAULT CHARSET utf8mb4';
+    await pool.query({sql});
+    console.log(`Successfully created reservation table`);
+}
+
 async function init() {
     const host = HOST_FILE ? fs.readFileSync(HOST_FILE) : HOST;
     const user = USER_FILE ? fs.readFileSync(USER_FILE) : USER;
@@ -79,7 +91,9 @@ async function init() {
 
     const promiseCreateFloorMapTable = createFloorMapTable();
 
-    return Promise.all([promiseCreateLockerTbl, promiseCreateLockerUnitTable, promiseCreateFloorMapTable]);
+    const promiseCreateReservationTable = createReservationTable();
+
+    return Promise.all([promiseCreateLockerTbl, promiseCreateLockerUnitTable, promiseCreateFloorMapTable, promiseCreateReservationTable]);
 }
 
 async function teardown() {
@@ -190,6 +204,50 @@ async function reserveLocker(newLocker, oldLocker) {
     } finally {
         console.log("reserveLocker, releasing connection...");
         connection.release();
+    }
+}
+
+async function releaseLockers() {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Select lockers that are reserved for more than 15 minutes
+      const [rows] = await connection.execute(
+        `SELECT rt.UnitId, rt.CompartmentId
+         FROM reservation_table rt
+         JOIN locker_table lt ON rt.UnitId = lt.UnitId AND rt.CompartmentId = lt.CompartmentId
+         WHERE lt.State = "Reserved" AND rt.ReservationTime < NOW() - INTERVAL 15 MINUTE`
+      );
+
+      // Update the state of these lockers to Free
+      const releasePromises = rows.map(row =>
+        connection.execute(
+          `UPDATE locker_table
+           SET State = "Free"
+           WHERE UnitId = ? AND CompartmentId = ?`,
+          [row.UnitId, row.CompartmentId]
+        )
+      );
+
+      // Delete the corresponding records from the reservation_table
+      const deletePromises = rows.map(row =>
+        connection.execute(
+          `DELETE FROM reservation_table
+           WHERE UnitId = ? AND CompartmentId = ?`,
+          [row.UnitId, row.CompartmentId]
+        )
+      );
+
+      await Promise.all([...releasePromises, ...deletePromises]);
+
+      await connection.commit();
+      return rows;
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error releasing lockers:', error);
+    } finally {
+      connection.release();
     }
 }
 
@@ -312,6 +370,7 @@ module.exports = {
     getLockerUnitsOnFloor,
     getLockersForUnit,
     reserveLocker,
+    releaseLockers,
     // getItems,
     // getLockers,
     // getItem,
