@@ -122,8 +122,15 @@ app.post('/api/reserveLocker/unit/:unitId/compartment/:compartmentId', reserveLo
 //     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 // });
 
-// Start the server
+setInterval(async () => {
+  const releasedLockers = await db.releaseLockers();
+  if (releasedLockers.length > 0) {
+    console.log("Released lockers: ", releasedLockers);
+    io.emit('lockerUpdate', {});
+  }
+}, 60000); // Runs every minute
 
+// Start the server
 db.init().then(() => {
 
   server.listen(port, () => {

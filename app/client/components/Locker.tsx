@@ -54,9 +54,9 @@ export default function Locker({id, onSelectLocker}: LockerProps) {
     const onLockerUpdate = async (lockerId: LockerId) => {
       console.log('Received locker update: %j', lockerId);
       console.log('Current id: ' + id);
-      if (lockerId.locker === -1) return; // nothing to do since, the update is not for this locker unit
-      await fetchData(id);
+      if (id === -1) return; // nothing to do since, the update is not for this locker unit
 
+      await fetchData(id);
     };
 
     socket.on('lockerUpdate', onLockerUpdate);

@@ -51,6 +51,18 @@ async function createFloorMapTable() {
     console.log(`Successfully created floor map table`);
 }
 
+async function createReservationTable() {
+    const sql = 'CREATE TABLE IF NOT EXISTS reservation_table(Id INT AUTO_INCREMENT, \
+                                                              UnitId INT, \
+                                                              CompartmentId INT, \
+                                                              ReservationTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, \
+                                                              PRIMARY KEY(Id), \
+                                                              FOREIGN KEY(UnitId, CompartmentId) REFERENCES locker_table(UnitId, CompartmentId) ON DELETE CASCADE \
+                                                              ) DEFAULT CHARSET utf8mb4';
+    await pool.query({sql});
+    console.log(`Successfully created reservation table`);
+}
+
 async function init() {
     const host = HOST_FILE ? fs.readFileSync(HOST_FILE) : HOST;
     const user = USER_FILE ? fs.readFileSync(USER_FILE) : USER;
@@ -79,7 +91,9 @@ async function init() {
 
     const promiseCreateFloorMapTable = createFloorMapTable();
 
-    return Promise.all([promiseCreateLockerTbl, promiseCreateLockerUnitTable, promiseCreateFloorMapTable]);
+    const promiseCreateReservationTable = createReservationTable();
+
+    return Promise.all([promiseCreateLockerTbl, promiseCreateLockerUnitTable, promiseCreateFloorMapTable, promiseCreateReservationTable]);
 }
 
 async function teardown() {
@@ -118,6 +132,56 @@ async function getLockersForUnit(unitId) {
     return rows.map(item => Object.assign({}, item));
 }
 
+async function freeOldLocker(connection, unitId, compartmentId) {
+    if (unitId && compartmentId) {
+        console.log("reserveLocker, freeing old locker...");
+        // First check whether the old locker is still reserved
+        const [oldLockerRows] = await connection.query(
+            'SELECT * FROM locker_table WHERE UnitId = ? AND CompartmentId = ? AND State = "Reserved" FOR UPDATE',
+            [unitId, compartmentId]);
+
+        if (oldLockerRows.length === 0) {
+            throw new Error('Old locker is not reserved but was expected to be reserved');
+        }
+
+        await connection.query(
+            'UPDATE locker_table SET State = "Free" WHERE UnitId = ? AND CompartmentId = ?',
+            [unitId, compartmentId]);
+        const [result] = await connection.query(
+            'DELETE FROM reservation_table WHERE UnitId = ? AND CompartmentId = ?',
+            [unitId, compartmentId]);
+
+        if (result.affectedRows === 0) {
+            throw new Error('No reservation entry for locker %d-%d!', unitId, compartmentId);
+        }
+    }
+}
+
+async function reserveNewLocker(connection, unitId, compartmentId) {
+    // Check if the new locker is still available
+    console.log("reserveLocker, check if locker is free...");
+    const [rows] = await connection.query(
+        'SELECT * FROM locker_table WHERE UnitId = ? AND CompartmentId = ? AND State = "Free" FOR UPDATE',
+        [unitId, compartmentId]
+    );
+
+    if (rows.length === 0) {
+        console.log("reserveLocker, locker is not free...");
+        throw new Error('Locker is already reserved');
+    }
+
+    console.log("reserveLocker, reserve locker...");
+    const queryResult = await connection.query(
+        'UPDATE locker_table SET State = "Reserved" WHERE UnitId = ? AND CompartmentId = ?',
+        [unitId, compartmentId]);
+
+    const [result] = await connection.query(
+        'INSERT INTO reservation_table (UnitId, CompartmentId, ReservationTime) VALUES (?, ?, NOW())',
+        [unitId, compartmentId]);
+    console.log("reserveLocker, reservation made: %d", result.insertId);
+    return queryResult;
+}
+
 // As async function this returns a promise which fulfils with the result of the query.
 async function reserveLocker(newLocker, oldLocker) {
     console.log("reserveLocker, creating connection...");
@@ -128,34 +192,9 @@ async function reserveLocker(newLocker, oldLocker) {
         console.log("reserveLocker, starting transaction...");
         await connection.beginTransaction();
 
-        // If oldLocker is not undefined, then free old locker
-        if (oldLocker.locker && oldLocker.compartment) {
-            console.log("reserveLocker, freeing old locker...");
-            // First check whether the old locker is still reserved
-            const [oldLockerRows] = await connection.query('SELECT * FROM locker_table WHERE UnitId = ? AND CompartmentId = ? AND State = "Reserved" FOR UPDATE', [oldLocker.locker, oldLocker.compartment]);
+        await freeOldLocker(connection, oldLocker.locker, oldLocker.compartment);
+        const queryResult = await reserveNewLocker(connection, newLocker.locker, newLocker.compartment);
 
-            if (oldLockerRows.length === 0) {
-                throw new Error('Old locker is not reserved but was expected to be reserved');
-            }
-
-            await connection.query('UPDATE locker_table SET State = "Free" WHERE UnitId = ? AND CompartmentId = ?', [oldLocker.locker, oldLocker.compartment]);
-        }
-
-        // Check if the new locker is still available
-        console.log("reserveLocker, check if locker is free...");
-        const [rows] = await connection.query(
-            'SELECT * FROM locker_table WHERE UnitId = ? AND CompartmentId = ? AND State = "Free" FOR UPDATE',
-            [newLocker.locker, newLocker.compartment]
-        );
-
-        if (rows.length === 0) {
-            console.log("reserveLocker, locker is not free...");
-            throw new Error('Locker is already reserved');
-        }
-
-        console.log("reserveLocker, reserve locker...");
-        const queryResult = await connection.query('UPDATE locker_table SET State = "Reserved" WHERE UnitId = ? AND CompartmentId = ?', [newLocker.locker, newLocker.compartment]);
-        console.log("reserveLocker, committing transaction...");
         await connection.commit();
         return queryResult;
     } catch (error) {
@@ -165,6 +204,50 @@ async function reserveLocker(newLocker, oldLocker) {
     } finally {
         console.log("reserveLocker, releasing connection...");
         connection.release();
+    }
+}
+
+async function releaseLockers() {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Select lockers that are reserved for more than 15 minutes
+      const [rows] = await connection.execute(
+        `SELECT rt.UnitId, rt.CompartmentId
+         FROM reservation_table rt
+         JOIN locker_table lt ON rt.UnitId = lt.UnitId AND rt.CompartmentId = lt.CompartmentId
+         WHERE lt.State = "Reserved" AND rt.ReservationTime < NOW() - INTERVAL 15 MINUTE`
+      );
+
+      // Update the state of these lockers to Free
+      const releasePromises = rows.map(row =>
+        connection.execute(
+          `UPDATE locker_table
+           SET State = "Free"
+           WHERE UnitId = ? AND CompartmentId = ?`,
+          [row.UnitId, row.CompartmentId]
+        )
+      );
+
+      // Delete the corresponding records from the reservation_table
+      const deletePromises = rows.map(row =>
+        connection.execute(
+          `DELETE FROM reservation_table
+           WHERE UnitId = ? AND CompartmentId = ?`,
+          [row.UnitId, row.CompartmentId]
+        )
+      );
+
+      await Promise.all([...releasePromises, ...deletePromises]);
+
+      await connection.commit();
+      return rows;
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error releasing lockers:', error);
+    } finally {
+      connection.release();
     }
 }
 
@@ -287,6 +370,7 @@ module.exports = {
     getLockerUnitsOnFloor,
     getLockersForUnit,
     reserveLocker,
+    releaseLockers,
     // getItems,
     // getLockers,
     // getItem,
