@@ -1,16 +1,17 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import FormPageNavigation from "./FormPageNavigation";
 import { useNavigate } from "react-router-dom";
 import FloorPlanCarousel  from "../components/FloorPlanCarousel";
 import { StepperDispatchContext } from "../contexts/StepperContext";
-import { LockerSelectionContext } from "../contexts/LockerSelectionContext";
+import { LockerSelectionContext, LockerSelectionDispatchContext } from "../contexts/LockerSelectionContext";
 
 export default function FormPageContact() {
 
   const navigate = useNavigate();
   const dispatchStepper = useContext(StepperDispatchContext);
   const selectedLocker = useContext(LockerSelectionContext);
+  const dispatchLocker = useContext(LockerSelectionDispatchContext);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   const handleClickNextPage = () => {
@@ -36,6 +37,23 @@ export default function FormPageContact() {
     }
     navigate('/contact');
   }
+
+  useEffect(() => {
+    if (selectedLocker) {
+      const timeout = setTimeout(() => {
+        alert('Your reservation has timed out.');
+        if (dispatchLocker !== undefined) {
+          dispatchLocker({ type: 'reset', lockerId: { locker: 0, compartment: 0 }});
+        }
+        if (dispatchStepper !== undefined) {
+          dispatchStepper({ type: 'prev' });
+        }
+        navigate('/contact');
+      }, 15 * 60 * 1000); // 15 minutes
+
+      return () => clearTimeout(timeout);
+    }
+  }, [selectedLocker]);
 
   const errorMsgProp = errorMsg !== '' ? { errorMsg: errorMsg } : {};
 

@@ -34,6 +34,9 @@ function lockerSelectionReducer(currentLocker: LockerId, action: LockerSelection
     case 'select': {
       return action.lockerId;
     }
+    case 'reset': {
+      return {locker: 0, compartment: 0};
+    }
     default: {
       throw Error('Unknown action: ' + action.type);
     }
