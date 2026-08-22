@@ -46,7 +46,8 @@ class LockerManager:
     def from_csv(cls, file, delimiter: str = ';') -> "LockerManager":
         """Build a manager from an open locker-database CSV file.
 
-        The header row is skipped; see :meth:`from_rows` for row handling.
+        The header row is skipped; see :meth:`from_rows` for row handling
+        (parsing stops at the first blank row).
         """
         reader = csv.reader(file, delimiter=delimiter)
         next(reader, None)  # skip header
@@ -72,16 +73,18 @@ class LockerManager:
         """Build a manager from header-less database rows.
 
         Each row is a sequence of cell values (strings, numbers or ``None``).
-        Blank rows are ignored. A row missing a required ``Etage``, ``Spind``
-        or ``Fach`` field raises :class:`RuntimeError` naming the offending row
-        and its 1-based data-row index.
+        Parsing stops at the first blank row, which terminates the table (any
+        trailing summary or note rows below it are ignored). A row missing a
+        required ``Etage``, ``Spind`` or ``Fach`` field raises
+        :class:`RuntimeError` naming the offending row and its 1-based
+        data-row index.
         """
         column = cls._Column
         entries: list[_Entry] = []
         for dataRow, raw in enumerate(rows, start=1):
             row = ['' if cell is None else str(cell).strip() for cell in raw]
-            if not any(row):  # skip blank rows
-                continue
+            if not any(row):  # blank row terminates the table
+                break
             if any(len(row) <= i or row[i] == '' for i in cls._REQUIRED_COLUMNS):
                 raise RuntimeError(
                     f"Corrupted locker database: missing required field in "
