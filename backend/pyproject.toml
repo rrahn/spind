@@ -9,6 +9,7 @@ dependencies = [
     "click>=8.1",
     "rich>=13.0",
     "rich-click>=1.7",
+    "pydantic>=2",
 ]
 
 [project.scripts]
