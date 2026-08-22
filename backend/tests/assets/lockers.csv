@@ -1,0 +1,9 @@
+Etage;Spind;Fach;Besetzt;Defekt;Nummer;Orginal Schlüssel;Anzahl Kopien;Anzahl herausgebbarer Schlüssel ;Anzahl Schlüssel Gesamt;Bemerkung;Reparaiert;
+EG;1;1;0;;2H0572;1;4;4;5;;;
+EG;5;1;0;;2H0594;1;2;2;3;;;
+EG;3;1;0;1;2H1624;1;3;3;4;Schloss defekt;;
+1.OG;30;1;0;;3H0101;1;3;3;4;;;
+1.OG;9;1;0;1;3H0099;1;3;3;4;Griff abgebrochen;;
+2.OG;20;1;0;;4H0202;1;2;2;3;;;
+2.OG;25;1;1;1;4H0250;1;3;3;4;Tür verzogen;;
+

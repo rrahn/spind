@@ -3,7 +3,7 @@
 import csv
 import operator
 
-import click
+import rich_click as click
 import networkx as nx
 from rich.console import Console
 from rich.table import Table
@@ -26,14 +26,19 @@ def computeWeight(classRoomPosition, lockerPosition):
     return abs(classRoomPosition - lockerPosition) + offset
 
 
-@click.command()
+@click.group()
+def cli():
+    """Locker tools for the spind backend."""
+
+
+@cli.command()
 @click.option('-o', '--orders', required=True, type=click.File('r', encoding='UTF-8'),
               help='Locker orders CSV to read.')
 @click.option('-l', '--lockers', required=True, type=click.File('r', encoding='UTF-8'),
               help='Locker database CSV to read.')
 @click.option('-w', '--output', type=click.Path(dir_okay=False, writable=True),
               help='Write orders CSV with assigned lockers to this path.')
-def main(orders, lockers, output):
+def assign(orders, lockers, output):
     """Assign lockers to open orders via minimum-weight bipartite matching."""
 
     # Static initialisation of locker ids, rooms, and their positions.
@@ -194,7 +199,6 @@ def main(orders, lockers, output):
             writer.writerows(allOrders)
         console.print(f"Wrote {len(allOrders)} orders to {output}")
 
-# Define main method.
-# main() will be executed
+
 if __name__ == '__main__':
-    main()
+    cli()
