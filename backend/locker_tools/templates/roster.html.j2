@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Spind-Ausgabe</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      color: #000;
+    }
+
+    /* Keep each class table whole; push it to the next page instead of splitting.
+       A single class larger than one page falls back to breaking with repeated headers. */
+    .class-block {
+      break-inside: avoid;
+      margin-bottom: 12mm;
+    }
+
+    table.class-list {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table.class-list th,
+    table.class-list td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      text-align: left;
+    }
+
+    /* Repeat the class name and column headers on page overflow. */
+    table.class-list thead {
+      display: table-header-group;
+    }
+
+    th.class-header {
+      font-size: 14pt;
+      text-align: center;
+      background: #e8e8e8;
+    }
+
+    td.signature {
+      min-width: 45mm;
+    }
+  </style>
+</head>
+<body>
+  {% for table in tables %}
+  <div class="class-block">
+    {{ table | safe }}
+  </div>
+  {% endfor %}
+</body>
+</html>

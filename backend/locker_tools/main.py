@@ -7,6 +7,7 @@ from locker_tools.assignee_source import from_orders
 from locker_tools.assigner import assign_lockers
 from locker_tools.locker_manager import LockerManager
 from locker_tools.output import render_table, write_csv
+from locker_tools.roster import RosterManager
 
 
 @click.group()
@@ -52,6 +53,23 @@ def assign(database, orders, forename, surname, grade, amount, csv_path):
     render_table(pairs)
     if csv_path:
         write_csv(csv_path, pairs)
+
+
+@cli.command()
+@click.option('--database', required=True, type=click.Path(exists=True, dir_okay=False),
+              help='Excel workbook with the assignment list on its first sheet.')
+@click.option('--output', 'output_path', required=True, type=click.Path(dir_okay=False, writable=True),
+              help='Path of the printable HTML handout to write.')
+@click.option('--open/--no-open', 'open_after', default=False, show_default=True,
+              help='Open the written HTML file in the browser afterwards.')
+def roster(database, output_path, open_after):
+    """Generate a printable per-class handout (one table per grade).
+
+    Reads the assignment sheet (first sheet) and writes an HTML document with
+    one table per grade, sorted by name, with a blank signature column.
+    """
+    manager = RosterManager.from_excel(database)
+    manager.write_html(output_path, open_after=open_after)
 
 
 if __name__ == '__main__':
