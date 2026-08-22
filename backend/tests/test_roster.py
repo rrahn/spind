@@ -106,3 +106,38 @@ class TestRosterHtml:
         ]
         html = RosterWriter().render(rosters)
         assert html.index(">5N<") < html.index(">9A<")
+
+    def test_grade_filter_renders_only_that_class(self, tmp_path):
+        rows = [
+            HEADER,
+            _row("Groh", "Lara", "8B", "1/1"),
+            _row("Movradin", "Eduard", "9A", "2/1"),
+        ]
+        manager = RosterManager.from_rows(rows)
+        out = tmp_path / "roster.html"
+
+        manager.write_html(out, grade="8B")
+
+        html = out.read_text(encoding="utf-8")
+        assert ">8B<" in html and "Groh" in html
+        assert ">9A<" not in html and "Movradin" not in html
+
+    def test_grade_filter_is_case_insensitive(self, tmp_path):
+        rows = [HEADER, _row("Groh", "Lara", "8B", "1/1")]
+        manager = RosterManager.from_rows(rows)
+        out = tmp_path / "roster.html"
+
+        manager.write_html(out, grade=" 8b ")
+
+        assert "Groh" in out.read_text(encoding="utf-8")
+
+    def test_unknown_grade_raises(self, tmp_path):
+        rows = [HEADER, _row("Groh", "Lara", "8B", "1/1")]
+        manager = RosterManager.from_rows(rows)
+        try:
+            manager.write_html(tmp_path / "roster.html", grade="7N")
+        except KeyError as exc:
+            assert "7N" in str(exc)
+        else:
+            raise AssertionError("expected KeyError")
+

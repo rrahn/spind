@@ -60,16 +60,22 @@ def assign(database, orders, forename, surname, grade, amount, csv_path):
               help='Excel workbook with the assignment list on its first sheet.')
 @click.option('--output', 'output_path', required=True, type=click.Path(dir_okay=False, writable=True),
               help='Path of the printable HTML handout to write.')
+@click.option('--grade', default=None, callback=lambda ctx, param, value: value.upper() if value else value,
+              help='Only print this class (Klasse); default prints all. Case-insensitive (e.g. 8b = 8B).')
 @click.option('--open/--no-open', 'open_after', default=False, show_default=True,
               help='Open the written HTML file in the browser afterwards.')
-def roster(database, output_path, open_after):
+def roster(database, output_path, grade, open_after):
     """Generate a printable per-class handout (one table per grade).
 
     Reads the assignment sheet (first sheet) and writes an HTML document with
-    one table per grade, sorted by name, with a blank signature column.
+    one table per grade, sorted by name, with a blank signature column. Use
+    --grade to print only a single class.
     """
     manager = RosterManager.from_excel(database)
-    manager.write_html(output_path, open_after=open_after)
+    try:
+        manager.write_html(output_path, open_after=open_after, grade=grade)
+    except KeyError as exc:
+        raise click.UsageError(str(exc).strip('"')) from exc
 
 
 if __name__ == '__main__':
