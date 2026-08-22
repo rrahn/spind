@@ -66,3 +66,25 @@ def test_assign_requires_a_source():
     runner = CliRunner()
     result = runner.invoke(cli, ["assign", "--database", str(SPIND_XLSX)])
     assert result.exit_code != 0
+
+
+def test_assign_csv_option_writes_file(tmp_path):
+    out = tmp_path / "paste.csv"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "assign",
+            "--database", str(SPIND_XLSX),
+            "--orders", str(ASSIGNEES_CSV),
+            "--csv", str(out),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+    rows = out.read_text(encoding="utf-8").splitlines()
+    assert len(rows) == 3
+    for row in rows:
+        assert row.count(";") == 9  # 10 columns Betrag..Spind
+
