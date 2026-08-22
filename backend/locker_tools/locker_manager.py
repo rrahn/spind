@@ -1,6 +1,7 @@
 import csv
 from enum import IntEnum
 
+from openpyxl import load_workbook
 from pydantic import BaseModel, ConfigDict
 
 from locker_tools.locker import Locker
@@ -45,27 +46,50 @@ class LockerManager:
     def from_csv(cls, file, delimiter: str = ';') -> "LockerManager":
         """Build a manager from an open locker-database CSV file.
 
-        The header row is skipped and blank lines are ignored. Each remaining
-        row must carry the required ``Etage``, ``Spind`` and ``Fach`` fields;
-        a row missing any of them raises :class:`RuntimeError` naming the
-        offending row and its 1-based data-row index.
+        The header row is skipped; see :meth:`from_rows` for row handling.
         """
         reader = csv.reader(file, delimiter=delimiter)
         next(reader, None)  # skip header
+        return cls.from_rows(reader)
 
+    @classmethod
+    def from_excel(cls, path, sheet_index: int = 1) -> "LockerManager":
+        """Build a manager from the locker-database sheet of an Excel workbook.
+
+        The workbook is opened read-only; ``sheet_index`` selects the database
+        sheet (default: the second sheet). The header row is skipped.
+        """
+        workbook = load_workbook(path, read_only=True, data_only=True)
+        try:
+            rows = workbook.worksheets[sheet_index].iter_rows(values_only=True)
+            next(rows, None)  # skip header
+            return cls.from_rows(rows)
+        finally:
+            workbook.close()
+
+    @classmethod
+    def from_rows(cls, rows) -> "LockerManager":
+        """Build a manager from header-less database rows.
+
+        Each row is a sequence of cell values (strings, numbers or ``None``).
+        Blank rows are ignored. A row missing a required ``Etage``, ``Spind``
+        or ``Fach`` field raises :class:`RuntimeError` naming the offending row
+        and its 1-based data-row index.
+        """
         column = cls._Column
         entries: list[_Entry] = []
-        for dataRow, row in enumerate(reader, start=1):
-            if not any(field.strip() for field in row):  # skip blank lines
+        for dataRow, raw in enumerate(rows, start=1):
+            row = ['' if cell is None else str(cell).strip() for cell in raw]
+            if not any(row):  # skip blank rows
                 continue
-            if any(len(row) <= i or row[i].strip() == '' for i in cls._REQUIRED_COLUMNS):
+            if any(len(row) <= i or row[i] == '' for i in cls._REQUIRED_COLUMNS):
                 raise RuntimeError(
                     f"Corrupted locker database: missing required field in "
-                    f"row {dataRow}: {delimiter.join(row)}"
+                    f"row {dataRow}: {';'.join(row)}"
                 )
-            locker = Locker(int(row[column.SPIND].strip()), int(row[column.FACH].strip()))
-            occupied = row[column.BESETZT].strip() not in ('', '0') if len(row) > column.BESETZT else False
-            defect = row[column.DEFEKT].strip() != '' if len(row) > column.DEFEKT else False
+            locker = Locker(int(row[column.SPIND]), int(row[column.FACH]))
+            occupied = row[column.BESETZT] not in ('', '0') if len(row) > column.BESETZT else False
+            defect = row[column.DEFEKT] != '' if len(row) > column.DEFEKT else False
             entries.append(_Entry(locker=locker, occupied=occupied, defect=defect))
 
         return cls(entries)
