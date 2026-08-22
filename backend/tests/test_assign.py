@@ -1,4 +1,3 @@
-import csv
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -6,38 +5,31 @@ from click.testing import CliRunner
 from locker_tools.main import cli
 
 ASSETS = Path(__file__).parent / "assets"
-LOCKER_INDEX = 12
+SPIND_XLSX = ASSETS / "spind.xlsx"
 
-# Lockers with an empty Defekt column across all Etagen; the defect
-# lockers (3/1, 9/1, 25/1) must be excluded from assignment.
+# Available lockers in the spind_db sheet (not occupied, not defect).
 AVAILABLE_LOCKERS = {"1/1", "5/1", "30/1", "20/1"}
 
 
-def test_assign_fills_lockers_for_unassigned_orders(tmp_path):
-    output = tmp_path / "orders_assigned.csv"
-
+def test_assign_single_person_gets_available_locker():
     runner = CliRunner()
     result = runner.invoke(
         cli,
         [
             "assign",
-            "-o", str(ASSETS / "orders.csv"),
-            "-l", str(ASSETS / "lockers.csv"),
-            "-w", str(output),
+            "--database", str(SPIND_XLSX),
+            "--forename", "Ada",
+            "--surname", "Byron",
+            "--grade", "7A",
         ],
     )
 
     assert result.exit_code == 0, result.output
-    assert output.exists()
+    assert "Ada" in result.output
+    assert any(code in result.output for code in AVAILABLE_LOCKERS)
 
-    with output.open(newline="", encoding="UTF-8") as f:
-        rows = list(csv.reader(f))
 
-    data_rows = rows[1:]
-    assigned = [row[LOCKER_INDEX].strip() for row in data_rows]
-
-    # Every unassigned student now has a locker from the available set.
-    assert len(assigned) == 3
-    assert all(locker in AVAILABLE_LOCKERS for locker in assigned)
-    # Each locker is handed out at most once.
-    assert len(set(assigned)) == len(assigned)
+def test_assign_requires_person_options():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["assign", "--database", str(SPIND_XLSX)])
+    assert result.exit_code != 0
