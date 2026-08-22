@@ -3,6 +3,7 @@ const http = require('http');
 const db = require('./models/database.js');
 const { Server } = require("socket.io");
 
+// Middleware functions
 const getFloorMaps = require('./routes/getFloorMaps.js');
 const getLockerUnits = require('./routes/getLockerUnits.js');
 const getLockerUnitsOnFloor = require('./routes/getLockerUnitsOnFloor.js');
