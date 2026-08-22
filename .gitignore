@@ -1,0 +1,3 @@
+# Local environment configuration — never commit real secrets.
+.env
+.env.local

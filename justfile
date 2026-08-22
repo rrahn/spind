@@ -4,12 +4,19 @@
 
 set shell := ["bash", "-cu"]
 
+# Load variables from .env (git-ignored) when present.
+set dotenv-load := true
+
 backend_dir := "backend"
 frontend_dir := "frontend"
 
 # List available recipes.
 default:
     @just --list
+
+# Create a local .env from the template if it does not exist.
+env:
+    test -f .env || cp .env.example .env
 
 # Install backend and frontend dependencies.
 install:
