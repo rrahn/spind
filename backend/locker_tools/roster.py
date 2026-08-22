@@ -168,8 +168,21 @@ class RosterManager:
     def rosters(self) -> list[ClassRoster]:
         return list(self._rosters)
 
-    def write_html(self, output_path, open_after: bool = False) -> None:
-        """Render the printable handout to ``output_path`` (optionally open it)."""
-        self._writer.write(self._rosters, output_path)
+    def write_html(self, output_path, open_after: bool = False, grade: str | None = None) -> None:
+        """Render the printable handout to ``output_path`` (optionally open it).
+
+        With ``grade`` set, only that class is rendered; otherwise every class
+        is included. Raises :class:`KeyError` when ``grade`` is unknown.
+        """
+        rosters = self._rosters if grade is None else [self._select(grade)]
+        self._writer.write(rosters, output_path)
         if open_after:
             webbrowser.open(Path(output_path).resolve().as_uri())
+
+    def _select(self, grade: str) -> ClassRoster:
+        for roster in self._rosters:
+            if roster.grade.casefold() == grade.strip().casefold():
+                return roster
+        available = ", ".join(roster.grade for roster in self._rosters)
+        raise KeyError(f"Unknown class '{grade}'. Available: {available}")
+
