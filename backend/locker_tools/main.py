@@ -8,11 +8,7 @@ import networkx as nx
 from rich.console import Console
 from rich.table import Table
 
-from locker_tools.locker import Locker
-
-def toLocker(lockerCode: str):
-    lockerID, lockerBox = lockerCode.split('/')
-    return Locker(int(lockerID), int(lockerBox))
+from locker_tools.locker_manager import LockerManager
 
 weightOffsets = [[0, 1000, 4000, 8000],
                  [1000, 0, 1000, 4000],
@@ -94,19 +90,11 @@ def assign(orders, lockers, output):
         else:
             assignedOrders.append(order)
 
-    getLocker = lambda order : (toLocker(order[LOCKER_INDEX].strip()))
-    occupiedLockers = list(getLocker(order) for order in assignedOrders)
     select = lambda order : (f"{order[FORNAME_INDEX].strip()} {order[NAME_INDEX].strip()}", order[GRADE_INDEX].strip().upper())
     todoOrders = dict(list(select(order) for order in unassignedOrders))
     # ############################################
     # Parse and generate list of available lockers
-    isAvailable = lambda lockerRow: lockerRow[0] != '' and toLocker(lockerRow[1].strip() + '/' + lockerRow[2].strip()) not in occupiedLockers and lockerRow[4].strip() == ''
-    availLockerList = []
-
-    lockerReader = csv.reader(lockers, delimiter=';')
-    next(lockerReader)
-    availLocker = list(row for row in lockerReader if len(row) > 4 and isAvailable(row))
-    availLockerList = [toLocker(lockerRow[1].strip() + '/' + lockerRow[2].strip()) for lockerRow in availLocker]
+    availLockerList = LockerManager.from_csv(lockers).available_lockers()
 
     # ########################################################
     # Generate bipartite graph for automatic locker assignment
