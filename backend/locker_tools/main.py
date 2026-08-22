@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.table import Table
 
 from locker_tools.assignee import Assignee
+from locker_tools.assignee_source import from_orders
 from locker_tools.assigner import assign_lockers
 from locker_tools.locker_manager import LockerManager
 
@@ -35,13 +36,30 @@ def _render_table(pairs):
 @cli.command()
 @click.option('--database', required=True, type=click.Path(exists=True, dir_okay=False),
               help='Excel workbook with the locker database on its second sheet.')
-@click.option('--forename', required=True, help='Assignee forename (Vorname).')
-@click.option('--surname', required=True, help='Assignee surname (Name).')
-@click.option('--grade', required=True, help='Assignee grade (Klasse).')
+@click.option('--orders', type=click.File('r', encoding='utf-8-sig'),
+              help='Orders CSV (forename,surname,grade,...,amount) for multiple assignees.')
+@click.option('--forename', help='Assignee forename (Vorname).')
+@click.option('--surname', help='Assignee surname (Name).')
+@click.option('--grade', help='Assignee grade (Klasse).')
 @click.option('--amount', default=50, type=float, show_default=True, help='Paid amount (Betrag).')
-def assign(database, forename, surname, grade, amount):
-    """Assign a locker to a single person via minimum-weight bipartite matching."""
-    assignees = [Assignee(forename=forename, surname=surname, grade=grade, amount=amount)]
+def assign(database, orders, forename, surname, grade, amount):
+    """Assign lockers to people via minimum-weight bipartite matching.
+
+    Provide either an orders CSV (--orders) or a single person via
+    --forename/--surname/--grade.
+    """
+    person = (forename, surname, grade)
+    if orders is not None:
+        if any(person):
+            raise click.UsageError(
+                "--orders cannot be combined with --forename/--surname/--grade.")
+        assignees = from_orders(orders)
+    else:
+        if not all(person):
+            raise click.UsageError(
+                "Provide --orders or all of --forename, --surname and --grade.")
+        assignees = [Assignee(forename=forename, surname=surname, grade=grade, amount=amount)]
+
     manager = LockerManager.from_excel(database)
     pairs = assign_lockers(assignees, manager)
     _render_table(pairs)
