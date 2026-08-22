@@ -8,10 +8,7 @@ import operator
 import sys
 
 
-from classRoom import ClassRoom
-from pathlib import Path
-from locker import Locker
-from position import Position
+from locker_tools.locker import Locker
 
 def toLocker(lockerCode: str):
     lockerID, lockerBox = lockerCode.split('/')

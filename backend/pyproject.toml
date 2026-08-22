@@ -1,0 +1,24 @@
+[project]
+name = "locker-tools"
+version = "0.1.0"
+description = "Locker assignment tooling for the spind backend"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=2.7",
+]
+
+[project.scripts]
+locker-tools = "locker_tools.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["locker_tools*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
