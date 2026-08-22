@@ -1,4 +1,3 @@
-import csv
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -6,38 +5,86 @@ from click.testing import CliRunner
 from locker_tools.main import cli
 
 ASSETS = Path(__file__).parent / "assets"
-LOCKER_INDEX = 12
+SPIND_XLSX = ASSETS / "spind.xlsx"
+ASSIGNEES_CSV = ASSETS / "assignees.csv"
 
-# Lockers with an empty Defekt column across all Etagen; the defect
-# lockers (3/1, 9/1, 25/1) must be excluded from assignment.
+# Available lockers in the spind_db sheet (not occupied, not defect).
 AVAILABLE_LOCKERS = {"1/1", "5/1", "30/1", "20/1"}
 
 
-def test_assign_fills_lockers_for_unassigned_orders(tmp_path):
-    output = tmp_path / "orders_assigned.csv"
-
+def test_assign_single_person_gets_available_locker():
     runner = CliRunner()
     result = runner.invoke(
         cli,
         [
             "assign",
-            "-o", str(ASSETS / "orders.csv"),
-            "-l", str(ASSETS / "lockers.csv"),
-            "-w", str(output),
+            "--database", str(SPIND_XLSX),
+            "--forename", "Ada",
+            "--surname", "Byron",
+            "--grade", "7A",
         ],
     )
 
     assert result.exit_code == 0, result.output
-    assert output.exists()
+    assert "Ada" in result.output
+    assert any(code in result.output for code in AVAILABLE_LOCKERS)
 
-    with output.open(newline="", encoding="UTF-8") as f:
-        rows = list(csv.reader(f))
 
-    data_rows = rows[1:]
-    assigned = [row[LOCKER_INDEX].strip() for row in data_rows]
+def test_assign_orders_csv_assigns_all_people():
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "assign",
+            "--database", str(SPIND_XLSX),
+            "--orders", str(ASSIGNEES_CSV),
+        ],
+    )
 
-    # Every unassigned student now has a locker from the available set.
-    assert len(assigned) == 3
-    assert all(locker in AVAILABLE_LOCKERS for locker in assigned)
-    # Each locker is handed out at most once.
-    assert len(set(assigned)) == len(assigned)
+    assert result.exit_code == 0, result.output
+    for name in ("Byron", "Ross", "Lee"):
+        assert name in result.output
+
+
+def test_assign_orders_and_person_are_mutually_exclusive():
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "assign",
+            "--database", str(SPIND_XLSX),
+            "--orders", str(ASSIGNEES_CSV),
+            "--forename", "Ada",
+            "--surname", "Byron",
+            "--grade", "7A",
+        ],
+    )
+    assert result.exit_code != 0
+
+
+def test_assign_requires_a_source():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["assign", "--database", str(SPIND_XLSX)])
+    assert result.exit_code != 0
+
+
+def test_assign_csv_option_writes_file(tmp_path):
+    out = tmp_path / "paste.csv"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "assign",
+            "--database", str(SPIND_XLSX),
+            "--orders", str(ASSIGNEES_CSV),
+            "--csv", str(out),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+    rows = out.read_text(encoding="utf-8").splitlines()
+    assert len(rows) == 3
+    for row in rows:
+        assert row.count(";") == 9  # 10 columns Betrag..Spind
+

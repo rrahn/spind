@@ -26,4 +26,7 @@ class Locker:
     def __hash__(self):
         return self.id()*100+self.box()
 
+    def __str__(self):
+        return f"{self._id}/{self._box}"
+
 

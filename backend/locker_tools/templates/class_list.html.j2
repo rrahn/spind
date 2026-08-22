@@ -1,0 +1,21 @@
+<table class="class-list">
+  <thead>
+    <tr><th class="class-header" colspan="4">{{ grade }}</th></tr>
+    <tr>
+      <th class="col-name">Name</th>
+      <th class="col-forename">Vorname</th>
+      <th class="col-spind">Spind</th>
+      <th class="col-ausgegeben">Ausgegeben</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <td>{{ entry.name }}</td>
+      <td>{{ entry.forename }}</td>
+      <td>{{ entry.spind }}</td>
+      <td class="signature"></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

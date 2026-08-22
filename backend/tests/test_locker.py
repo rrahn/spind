@@ -15,3 +15,8 @@ def test_ordering_by_id_then_box():
 def test_hashable_in_set():
     lockers = {Locker(1, 1), Locker(1, 1), Locker(1, 2)}
     assert len(lockers) == 2
+
+
+def test_str_renders_as_id_slash_box():
+    assert str(Locker(35, 1)) == "35/1"
+    assert f"{Locker(7, 3)}" == "7/3"
