@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-import argparse
 import csv
-import networkx as nx
-from networkx.algorithms import bipartite
 import operator
-import sys
 
+import click
+import networkx as nx
+from rich.console import Console
+from rich.table import Table
 
 from locker_tools.locker import Locker
 
@@ -26,20 +26,15 @@ def computeWeight(classRoomPosition, lockerPosition):
     return abs(classRoomPosition - lockerPosition) + offset
 
 
-def main():
-
-    # Initialise argument parser
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--orders', type=argparse.FileType('r', encoding='UTF-8'))
-    parser.add_argument('-l', '--lockers', type=argparse.FileType('r', encoding='UTF-8'))
-    parser.add_argument('-w', '--output', help='Write orders CSV with assigned lockers to this path')
-    args = vars(parser.parse_args(sys.argv[1:]))
-
-    if 'orders' not in args:
-        parser.exit(1, message="Missing locker orders!")
-
-    if 'lockers' not in args:
-        parser.exit(1, message="Missing locker database!")
+@click.command()
+@click.option('-o', '--orders', required=True, type=click.File('r', encoding='UTF-8'),
+              help='Locker orders CSV to read.')
+@click.option('-l', '--lockers', required=True, type=click.File('r', encoding='UTF-8'),
+              help='Locker database CSV to read.')
+@click.option('-w', '--output', type=click.Path(dir_okay=False, writable=True),
+              help='Write orders CSV with assigned lockers to this path.')
+def main(orders, lockers, output):
+    """Assign lockers to open orders via minimum-weight bipartite matching."""
 
     # Static initialisation of locker ids, rooms, and their positions.
 
@@ -77,14 +72,13 @@ def main():
     assignedOrders = []
     unassignedOrders = []
     allOrders = []  # every valid row, kept in input order for the output file
-    orderReader = csv.reader(args['orders'], dialect='excel')
+    orderReader = csv.reader(orders, dialect='excel')
     orderHeader = next(orderReader)
     # Split orders into assigned and unassigned
     skipGrade = lambda order: order[GRADE_INDEX].strip().upper() in tabuList
     duplicateAssignment = lambda order: order[LOCKER_INDEX].strip() == '???' or order[LOCKER_INDEX].strip() == ''
 
     for order in orderReader:
-        print(order)
         if len(order) <= LOCKER_INDEX:  # skip blank or truncated rows
             continue
         allOrders.append(order)
@@ -104,7 +98,7 @@ def main():
     isAvailable = lambda lockerRow: lockerRow[0] != '' and toLocker(lockerRow[1].strip() + '/' + lockerRow[2].strip()) not in occupiedLockers and lockerRow[4].strip() == ''
     availLockerList = []
 
-    lockerReader = csv.reader(args['lockers'], delimiter=';')
+    lockerReader = csv.reader(lockers, delimiter=';')
     next(lockerReader)
     availLocker = list(row for row in lockerReader if len(row) > 4 and isAvailable(row))
     availLockerList = [toLocker(lockerRow[1].strip() + '/' + lockerRow[2].strip()) for lockerRow in availLocker]
@@ -171,25 +165,34 @@ def main():
     for assignedOrder in assignedOrders:
         remainingAssignment.append((assignedOrder[5].strip(), assignedOrder[6].strip().upper(), assignedOrder[9], assignedOrder[11]))
 
-    # Sort final assignment and print list
+    # Sort final assignment and render as a table
     finalAssignment = sorted(remainingAssignment, key = operator.itemgetter(1, 0))
-    for x in finalAssignment:
-        print(x[0],x[1],x[3],x[2], sep=';')
+
+    table = Table(title="Locker assignment")
+    table.add_column("Name", style="cyan", no_wrap=True)
+    table.add_column("Grade", style="magenta")
+    table.add_column("Locker", style="green")
+    table.add_column("Level", justify="right")
+    for name, grade, level, lockerCode in finalAssignment:
+        table.add_row(name, grade, lockerCode, level)
+
+    console = Console()
+    console.print(table)
 
     # #########################################################################
     # Write orders CSV with the newly assigned lockers filled into the locker
     # column. Previously assigned rows are copied over unchanged.
-    if args['output']:
+    if output:
         for order in unassignedOrders:
             orderKey = f"{order[FORNAME_INDEX].strip()} {order[NAME_INDEX].strip()}"
             if orderKey in newLockerByOrderKey:
                 order[LOCKER_INDEX] = newLockerByOrderKey[orderKey]
 
-        with open(args['output'], 'w', newline='', encoding='UTF-8') as outFile:
+        with open(output, 'w', newline='', encoding='UTF-8') as outFile:
             writer = csv.writer(outFile)
             writer.writerow(orderHeader)
             writer.writerows(allOrders)
-        print(f"Wrote {len(allOrders)} orders to {args['output']}")
+        console.print(f"Wrote {len(allOrders)} orders to {output}")
 
 # Define main method.
 # main() will be executed
