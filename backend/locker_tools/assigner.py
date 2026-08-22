@@ -45,6 +45,11 @@ def _room_position(assignee: Assignee) -> int | None:
     return ROOM_POSITIONS[room]
 
 
+def _warn_no_locker(assignee: Assignee) -> None:
+    logger.warning("No locker available for %s %s (grade %s)",
+                   assignee.forename, assignee.surname, assignee.grade)
+
+
 def assign_lockers(assignees: list[Assignee], manager: LockerManager) -> list[tuple[Assignee, Locker]]:
     """Match assignees to available lockers by minimum-weight bipartite matching.
 
@@ -64,18 +69,14 @@ def assign_lockers(assignees: list[Assignee], manager: LockerManager) -> list[tu
         matchable.append((assignee, position))
 
     n, m = len(matchable), len(available)
-    if n == 0 or m == 0:
-        for assignee, _ in matchable:
-            logger.warning("No locker available for %s %s (grade %s)",
-                           assignee.forename, assignee.surname, assignee.grade)
-        return []
+    matching: set = set()
+    if n and m:
+        graph = nx.complete_bipartite_graph(n, m)
+        for i, (_, room_position) in enumerate(matchable):
+            for j, locker in enumerate(available):
+                graph[i][j + n]['weight'] = compute_weight(room_position, LOCKER_POSITIONS[locker.id()])
+        matching = nx.min_weight_matching(graph)
 
-    graph = nx.complete_bipartite_graph(n, m)
-    for i, (_, room_position) in enumerate(matchable):
-        for j, locker in enumerate(available):
-            graph[i][j + n]['weight'] = compute_weight(room_position, LOCKER_POSITIONS[locker.id()])
-
-    matching = nx.min_weight_matching(graph)
     locker_by_index: dict[int, Locker] = {}
     for u, v in matching:
         if u >= n:
@@ -87,6 +88,5 @@ def assign_lockers(assignees: list[Assignee], manager: LockerManager) -> list[tu
         if i in locker_by_index:
             pairs.append((assignee, locker_by_index[i]))
         else:
-            logger.warning("No locker available for %s %s (grade %s)",
-                           assignee.forename, assignee.surname, assignee.grade)
+            _warn_no_locker(assignee)
     return pairs

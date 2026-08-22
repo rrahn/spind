@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import logging
 
 import rich_click as click
@@ -15,6 +13,20 @@ from locker_tools.output import render_table, write_csv
 def cli():
     """Locker tools for the spind backend."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+
+def _load_assignees(orders, forename, surname, grade, amount) -> list[Assignee]:
+    """Build assignees from either the orders CSV or the single-person options."""
+    person = (forename, surname, grade)
+    if orders is not None:
+        if any(person):
+            raise click.UsageError(
+                "--orders cannot be combined with --forename/--surname/--grade.")
+        return from_orders(orders)
+    if not all(person):
+        raise click.UsageError(
+            "Provide --orders or all of --forename, --surname and --grade.")
+    return [Assignee(forename=forename, surname=surname, grade=grade, amount=amount)]
 
 
 @cli.command()
@@ -34,18 +46,7 @@ def assign(database, orders, forename, surname, grade, amount, csv_path):
     Provide either an orders CSV (--orders) or a single person via
     --forename/--surname/--grade.
     """
-    person = (forename, surname, grade)
-    if orders is not None:
-        if any(person):
-            raise click.UsageError(
-                "--orders cannot be combined with --forename/--surname/--grade.")
-        assignees = from_orders(orders)
-    else:
-        if not all(person):
-            raise click.UsageError(
-                "Provide --orders or all of --forename, --surname and --grade.")
-        assignees = [Assignee(forename=forename, surname=surname, grade=grade, amount=amount)]
-
+    assignees = _load_assignees(orders, forename, surname, grade, amount)
     manager = LockerManager.from_excel(database)
     pairs = assign_lockers(assignees, manager)
     render_table(pairs)
