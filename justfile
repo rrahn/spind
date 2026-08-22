@@ -5,7 +5,7 @@
 set shell := ["bash", "-cu"]
 
 backend_dir := "backend"
-frontend_dir := "app"
+frontend_dir := "frontend"
 
 # List available recipes.
 default:
