@@ -92,28 +92,51 @@ class RosterManager:
         self._writer = writer or RosterWriter()
 
     @classmethod
-    def from_excel(cls, path, sheet_index: int = 0, writer: RosterWriter | None = None) -> "RosterManager":
+    def from_excel(
+        cls,
+        path,
+        sheet_index: int = 0,
+        writer: RosterWriter | None = None,
+        min_row: int | None = None,
+        max_row: int | None = None,
+    ) -> "RosterManager":
         """Build a manager from the assignment sheet of an Excel workbook.
 
         The workbook is opened read-only; ``sheet_index`` selects the sheet
-        (default: the first sheet). The header row is the first row.
+        (default: the first sheet). The header row is the first row. ``min_row``
+        and ``max_row`` restrict parsing to that inclusive range of data rows
+        (1-based, header excluded); by default the first through the last data
+        row are read.
         """
         workbook = load_workbook(path, read_only=True, data_only=True)
         try:
             rows = workbook.worksheets[sheet_index].iter_rows(values_only=True)
-            return cls.from_rows(rows, writer=writer)
+            return cls.from_rows(rows, writer=writer, min_row=min_row, max_row=max_row)
         finally:
             workbook.close()
 
     @classmethod
-    def from_rows(cls, rows, writer: RosterWriter | None = None) -> "RosterManager":
+    def from_rows(
+        cls,
+        rows,
+        writer: RosterWriter | None = None,
+        min_row: int | None = None,
+        max_row: int | None = None,
+    ) -> "RosterManager":
         """Build a manager from assignment rows whose first row is the header.
 
         Columns are located by header name (``Name``, ``Vorname``, ``Klasse``,
         ``Spind``); case and surrounding whitespace are ignored. Parsing stops
         at the first blank row. Rows with an empty ``Spind`` or ``Klasse`` are
-        skipped (only assigned people appear on the handout).
+        skipped (only assigned people appear on the handout). ``min_row`` and
+        ``max_row`` restrict parsing to that inclusive range of data rows
+        (1-based, header excluded); by default the first through the last data
+        row are read.
         """
+        if min_row is not None and max_row is not None and min_row > max_row:
+            raise ValueError(
+                f"min_row ({min_row}) must not be greater than max_row ({max_row})"
+            )
         rows = iter(rows)
         header = next(rows, None)
         if header is None:
@@ -121,7 +144,11 @@ class RosterManager:
         index = cls._header_index(header)
 
         grouped: dict[str, list[RosterEntry]] = {}
-        for raw in rows:
+        for data_row, raw in enumerate(rows, start=1):  # 1 = first row after header
+            if max_row is not None and data_row > max_row:
+                break
+            if min_row is not None and data_row < min_row:
+                continue
             row = ["" if cell is None else str(cell).strip() for cell in raw]
             if not any(row):  # blank row terminates the table
                 break

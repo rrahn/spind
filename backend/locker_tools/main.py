@@ -62,16 +62,24 @@ def assign(database, orders, forename, surname, grade, amount, csv_path):
               help='Path of the printable HTML handout to write.')
 @click.option('--grade', default=None, callback=lambda ctx, param, value: value.upper() if value else value,
               help='Only print this class (Klasse); default prints all. Case-insensitive (e.g. 8b = 8B).')
+@click.option('--min-row', 'min_row', default=None, type=click.IntRange(min=1),
+              help='First data row to include (1-based, header excluded; default: first row).')
+@click.option('--max-row', 'max_row', default=None, type=click.IntRange(min=1),
+              help='Last data row to include (inclusive, 1-based, header excluded; default: last row).')
 @click.option('--open/--no-open', 'open_after', default=False, show_default=True,
               help='Open the written HTML file in the browser afterwards.')
-def roster(database, output_path, grade, open_after):
+def roster(database, output_path, grade, min_row, max_row, open_after):
     """Generate a printable per-class handout (one table per grade).
 
     Reads the assignment sheet (first sheet) and writes an HTML document with
     one table per grade, sorted by name, with a blank signature column. Use
-    --grade to print only a single class.
+    --grade to print only a single class, and --min-row/--max-row to restrict
+    the range of original Excel rows that is read.
     """
-    manager = RosterManager.from_excel(database)
+    if min_row is not None and max_row is not None and min_row > max_row:
+        raise click.UsageError(
+            f"--min-row ({min_row}) must not be greater than --max-row ({max_row}).")
+    manager = RosterManager.from_excel(database, min_row=min_row, max_row=max_row)
     try:
         manager.write_html(output_path, open_after=open_after, grade=grade)
     except KeyError as exc:
