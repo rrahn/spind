@@ -35,6 +35,24 @@ class TestLockerManager:
         manager = LockerManager.from_csv(io.StringIO(text))
         assert manager.available_lockers() == [Locker(1, 1)]
 
+    def test_available_lockers_excludes_single_or_no_key_rows(self):
+        header = ("Etage;Spind;Fach;Besetzt;Defekt;Nummer;Orginal Schlüssel;"
+                  "Anzahl Kopien;Anzahl herausgebbarer Schlüssel ;Anzahl Schlüssel Gesamt\n")
+        text = (header +
+                "EG;1;1;0;;;;;2;;\n"  # spare key: available
+                "EG;2;1;0;;;;;1;;\n"  # single key: excluded
+                "EG;3;1;0;;;;;0;;\n")  # no key: excluded
+        manager = LockerManager.from_csv(io.StringIO(text))
+        assert manager.available_lockers() == [Locker(1, 1)]
+
+    def test_available_lockers_by_floor_groups_in_file_order(self):
+        text = "Etage;Spind;Fach;Besetzt;Defekt\nEG;1;1;0;\n1.OG;2;1;0;\nEG;3;1;0;\n"
+        manager = LockerManager.from_csv(io.StringIO(text))
+        assert manager.available_lockers_by_floor() == {
+            "EG": [Locker(1, 1), Locker(3, 1)],
+            "1.OG": [Locker(2, 1)],
+        }
+
     def test_get_returns_available_locker_by_index(self, manager):
         # get(k) is positional access into the available lockers (file order).
         assert manager.get(0) == Locker(1, 1)

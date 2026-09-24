@@ -27,6 +27,16 @@ def render_table(pairs: list[Assignment]) -> None:
     Console().print(table)
 
 
+def render_available_table(grouped: dict[str, list[Locker]]) -> None:
+    """Print the available lockers as one rich table per floor, like the roster."""
+    for floor, lockers in grouped.items():
+        table = Table(title=f"Etage {floor}")
+        table.add_column("Spind", style="green")
+        for locker in sorted(lockers):
+            table.add_row(str(locker))
+        Console().print(table)
+
+
 def write_csv(path, pairs: list[Assignment]) -> None:
     """Write paste-ready rows spanning the sheet columns Betrag..Spind.
 
