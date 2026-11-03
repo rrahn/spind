@@ -9,8 +9,14 @@ import FormPageContact from './pages/FormPageContact';
 import FormPageLocker from './pages/FormPageLocker';
 import FormPagePayment from './pages/FormPagePayment';
 import FormPageSummary from './pages/FormPageSummary';
+import RasSimulator from './pages/RasSimulator';
 
 const router = createBrowserRouter([  // This is the router configuration
+  {
+    path: "/ras-simulator",
+    element: <RasSimulator />,
+    errorElement: <ErrorPage />,
+  },
   {
     path: "/",
     element: <FormPage />,
