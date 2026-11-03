@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const db = require('./models/database.js');
 const { Server } = require("socket.io");
+const { configuration, simulatorRouter } = require('./rasSimulator');
+const simulatorConfig = configuration();
 
 // Middleware functions
 const getFloorMaps = require('./routes/getFloorMaps.js');
@@ -48,6 +50,20 @@ if (dev) {
     //    .use(require('./dev').webpackComp)
        .use(require('./dev').webpackHot);
 }
+
+app.get('/ras-simulator', (req, res, next) => {
+    if (dev) {
+        const middleware = require('./dev').webpackComp;
+        middleware.waitUntilValid(() => {
+            middleware.context.outputFileSystem.readFile(htmlIndexFile, (error, content) => {
+                if (error) return next(error);
+                res.type('html').send(content);
+            });
+        });
+    } else {
+        res.sendFile(htmlIndexFile);
+    }
+});
 
 app.use(express.static(distDir)); // Serve the static files from the client app
 app.use('/public', express.static(publicDir)); // Serve the static files from the public folder
@@ -132,7 +148,11 @@ setInterval(async () => {
 }, 60000); // Runs every minute
 
 // Start the server
-db.init().then(() => {
+db.init().then(async () => {
+  if (simulatorConfig) {
+    const store = await db.createRasSimulator(simulatorConfig.key);
+    app.use('/api/ras-simulator', simulatorRouter(store, simulatorConfig.token));
+  }
 
   server.listen(port, () => {
     console.log('######################');
