@@ -13,6 +13,9 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: lockerDB
+      RAS_SIMULATOR_ENABLED: ${RAS_SIMULATOR_ENABLED:-false}
+      RAS_SIMULATOR_TOKEN: ${RAS_SIMULATOR_TOKEN:-}
+      RAS_SIMULATOR_KEY: ${RAS_SIMULATOR_KEY:-}
 
   mysql:
     image: mysql:8.0
