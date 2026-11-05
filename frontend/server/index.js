@@ -51,20 +51,6 @@ if (dev) {
        .use(require('./dev').webpackHot);
 }
 
-app.get('/ras-simulator', (req, res, next) => {
-    if (dev) {
-        const middleware = require('./dev').webpackComp;
-        middleware.waitUntilValid(() => {
-            middleware.context.outputFileSystem.readFile(htmlIndexFile, (error, content) => {
-                if (error) return next(error);
-                res.type('html').send(content);
-            });
-        });
-    } else {
-        res.sendFile(htmlIndexFile);
-    }
-});
-
 app.use(express.static(distDir)); // Serve the static files from the client app
 app.use('/public', express.static(publicDir)); // Serve the static files from the public folder
 app.use('/assets', express.static(path.join(publicDir, 'assets'))); // Serve the static files from the assets folder
