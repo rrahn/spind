@@ -1,12 +1,25 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { randomUUID } = require('node:crypto');
+const { createDecipheriv, randomUUID } = require('node:crypto');
 const express = require('express');
 const mysql = require('mysql2/promise');
-const { configuration, RasSimulatorStore, simulatorRouter, validateInput } = require('../rasSimulator');
+const { configuration, RasSimulatorStore, simulatorRouter } = require('../rasSimulator');
 
 const key = Buffer.alloc(32, 7);
 const token = 'simulator-test-token-with-at-least-32-characters';
+
+async function serve(store) {
+    const app = express();
+    app.use('/api/ras-simulator', simulatorRouter(store, token));
+    const server = app.listen(0, '127.0.0.1');
+    await new Promise(resolve => server.once('listening', resolve));
+    return {
+        url: `http://127.0.0.1:${server.address().port}/api/ras-simulator/locks/`,
+        close: () => new Promise(resolve => server.close(resolve)),
+    };
+}
+
+const headers = { Authorization: `Bearer ${token}` };
 
 test('simulator defaults off and rejects incomplete explicit configuration', () => {
     assert.equal(configuration({}), null);
@@ -17,41 +30,66 @@ test('simulator defaults off and rejects incomplete explicit configuration', () 
     }), { token, key });
 });
 
-test('strict input validation rejects malformed dates and identity-bearing references', () => {
-    for (const body of [null, [], {}, {
-        bookingReference: 'a pupil name', validFrom: '2027-01-01T00:00:00Z', validUntil: '2028-01-01T00:00:00Z',
-    }, {
-        bookingReference: 'opaque', validFrom: '2027-02-30T00:00:00Z', validUntil: '2028-01-01T00:00:00Z',
-    }, {
-        bookingReference: 'opaque', validFrom: '2027-01-01T00:00:00Z', validUntil: '2026-01-01T00:00:00Z',
-    }]) assert.throws(() => validateInput('allocate', body), /Supply|JSON/);
-    assert.throws(() => validateInput('rotate', {}), /allocationId/);
-});
-
-test('HTTP authentication, validation and explicit error mapping', async () => {
-    const app = express();
-    app.use(express.json());
-    app.use('/api/ras-simulator', simulatorRouter({
-        read() { throw new Error('test storage failure'); },
-    }, token));
-    const server = app.listen(0, '127.0.0.1');
-    await new Promise(resolve => server.once('listening', resolve));
-    const base = `http://127.0.0.1:${server.address().port}/api/ras-simulator/locks/`;
+test('endpoint accepts only authenticated POST requests with a valid locker UID', async () => {
+    const calls = [];
+    const server = await serve({
+        async generateCode(lockerUid) {
+            calls.push(lockerUid);
+            return { lockerUid, code: '001234' };
+        },
+    });
     try {
-        assert.equal((await fetch(`${base}demo`)).status, 401);
-        const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-        assert.equal((await fetch(`${base}bad.id`, { headers })).status, 422);
-        assert.equal((await fetch(`${base}demo/allocations`, { method: 'POST', headers, body: '{}' })).status, 422);
-        const response = await fetch(`${base}demo`, { headers });
-        assert.equal(response.status, 500);
+        const request = (uid, options = {}) => fetch(`${server.url}${uid}/code`, { method: 'POST', headers, ...options });
+        assert.equal((await request('locker-1', { headers: {} })).status, 401);
+        assert.equal((await request('locker-1', { headers: { Authorization: 'Bearer wrong-token' } })).status, 401);
+        assert.equal((await request('bad.id')).status, 422);
+        assert.equal((await request('a'.repeat(81))).status, 422);
+        assert.equal((await request('locker-1', { method: 'GET' })).status, 404);
+        const uid = randomUUID();
+        const response = await request(uid);
+        assert.equal(response.status, 200);
         assert.equal(response.headers.get('cache-control'), 'no-store');
-        assert.equal((await response.json()).code, 'SIMULATOR_FAILED');
+        assert.equal(response.headers.get('x-ras-simulator'), 'true');
+        assert.deepEqual(await response.json(), { lockerUid: uid, code: '001234' });
+        assert.deepEqual(calls, [uid]);
+        for (const path of ['allocations', 'rotate', 'reveal']) {
+            assert.equal((await fetch(`${server.url}${uid}/${path}`, { method: 'POST', headers })).status, 404);
+        }
     } finally {
-        await new Promise(resolve => server.close(resolve));
+        await server.close();
     }
 });
 
-test('MySQL persistence, encryption, concurrency and HTTP contract', {
+test('storage failure returns explicit error without disclosing internal details', async () => {
+    const server = await serve({ generateCode() { throw new Error('private storage details'); } });
+    try {
+        const response = await fetch(`${server.url}locker-1/code`, { method: 'POST', headers });
+        assert.equal(response.status, 500);
+        const result = await response.json();
+        assert.equal(result.code, 'SIMULATOR_FAILED');
+        assert.doesNotMatch(JSON.stringify(result), /private storage details/);
+    } finally {
+        await server.close();
+    }
+});
+
+test('transaction failure rolls back and releases its connection', async () => {
+    const events = [];
+    const store = new RasSimulatorStore({
+        async getConnection() {
+            return {
+                async beginTransaction() { events.push('begin'); },
+                async execute() { throw new Error('database unavailable'); },
+                async rollback() { events.push('rollback'); },
+                release() { events.push('release'); },
+            };
+        },
+    }, key);
+    await assert.rejects(() => store.generateCode('locker-1'), /database unavailable/);
+    assert.deepEqual(events, ['begin', 'rollback', 'release']);
+});
+
+test('MySQL code generation, replacement, persistence and concurrent requests', {
     skip: !process.env.RAS_TEST_MYSQL_PORT && 'Set RAS_TEST_MYSQL_PORT for an isolated MySQL test database.',
 }, async t => {
     const pool = mysql.createPool({
@@ -64,95 +102,50 @@ test('MySQL persistence, encryption, concurrency and HTTP contract', {
         connectionLimit: 10,
     });
     const store = new RasSimulatorStore(pool, key);
-    const prefix = randomUUID();
+    const uid = randomUUID();
+    const otherUid = randomUUID();
     let server;
     try {
         await store.init();
-        const app = express();
-        app.use(express.json());
-        app.use('/sim', simulatorRouter(store, token));
-        server = app.listen(0, '127.0.0.1');
-        await new Promise(resolve => server.once('listening', resolve));
-        const base = `http://127.0.0.1:${server.address().port}/sim/locks/`;
-        const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-        const period = {
-            bookingReference: 'opaque-booking',
-            validFrom: new Date(Date.now() - 60000).toISOString(),
-            validUntil: new Date(Date.now() + 3600000).toISOString(),
-        };
-        const lock = `${prefix}-a`;
-        await t.test('missing lock is explicit', async () => {
-            assert.equal((await fetch(`${base}${lock}`, { headers })).status, 404);
+        server = await serve(store);
+        const request = () => fetch(`${server.url}${uid}/code`, { method: 'POST', headers });
+        await t.test('UID alone generates code and another request replaces it', async () => {
+            const first = await request();
+            assert.equal(first.status, 200);
+            const result = await first.json();
+            assert.deepEqual(Object.keys(result).sort(), ['code', 'lockerUid']);
+            assert.equal(result.lockerUid, uid);
+            assert.match(result.code, /^\d{6}$/);
+            const next = await (await request()).json();
+            assert.notEqual(next.code, result.code);
+            const [rows] = await pool.execute('SELECT * FROM ras_simulator_lock WHERE lock_id = ?', [uid]);
+            assert.equal(rows[0].version, 2);
+            assert.notEqual(rows[0].encrypted_code, next.code);
+            const payload = Buffer.from(rows[0].encrypted_code, 'base64');
+            const decipher = createDecipheriv('aes-256-gcm', key, payload.subarray(0, 12));
+            decipher.setAAD(Buffer.from(uid));
+            decipher.setAuthTag(payload.subarray(12, 28));
+            assert.equal(Buffer.concat([decipher.update(payload.subarray(28)), decipher.final()]).toString(), next.code);
         });
-        const allocate = (requestId, body = period) => fetch(`${base}${lock}/allocations`, {
-            method: 'POST', headers: { ...headers, 'Idempotency-Key': requestId }, body: JSON.stringify(body),
+        await t.test('new store instance preserves state and different UIDs remain independent', async () => {
+            await new RasSimulatorStore(pool, key).generateCode(uid);
+            await store.generateCode(otherUid);
+            const [rows] = await pool.execute('SELECT lock_id, version FROM ras_simulator_lock WHERE lock_id IN (?, ?)', [uid, otherUid]);
+            assert.equal(rows.find(row => row.lock_id === uid).version, 3);
+            assert.equal(rows.find(row => row.lock_id === otherUid).version, 1);
         });
-        let allocation;
-        let firstCode;
-        await t.test('concurrent clients have one allocation winner', async () => {
-            const results = await Promise.all(Array.from({ length: 10 }, (_, index) => allocate(`claim-${index}`)));
-            assert.equal(results.filter(result => result.status === 200).length, 1);
-            assert.equal(results.filter(result => result.status === 409).length, 9);
-            allocation = await results.find(result => result.status === 200).json();
-            assert.equal(allocation.version, 1);
-            assert.equal(allocation.status, 'active');
-            assert.equal('code' in allocation, false);
-        });
-        await t.test('code requires explicit reveal and is encrypted in storage', async () => {
-            const result = await fetch(`${base}${lock}/reveal`, { method: 'POST', headers });
-            assert.equal(result.headers.get('cache-control'), 'no-store');
-            firstCode = (await result.json()).code;
-            assert.match(firstCode, /^\d{6}$/);
-            const [rows] = await pool.execute('SELECT encrypted_code FROM ras_simulator_lock WHERE lock_id = ?', [lock]);
-            assert.notEqual(rows[0].encrypted_code, firstCode);
-            assert.equal(Buffer.from(rows[0].encrypted_code, 'base64').includes(Buffer.from(firstCode)), false);
-            const freshStore = new RasSimulatorStore(pool, key);
-            assert.equal((await freshStore.read(lock, true)).code, firstCode);
-        });
-        await t.test('rotation requires current allocation and retries only rotate once', async () => {
-            const body = { allocationId: allocation.allocationId };
-            const rotate = (value = body) => fetch(`${base}${lock}/rotate`, {
-                method: 'POST', headers: { ...headers, 'Idempotency-Key': 'rotation-1' }, body: JSON.stringify(value),
-            });
-            const results = await Promise.all([rotate(), rotate(), rotate()]);
-            for (const result of results) {
-                assert.equal(result.status, 200);
-                assert.equal((await result.json()).version, 2);
+        await t.test('concurrent requests are serialised without losing updates', async () => {
+            const responses = await Promise.all(Array.from({ length: 10 }, request));
+            for (const response of responses) {
+                assert.equal(response.status, 200);
+                assert.match((await response.json()).code, /^\d{6}$/);
             }
-            assert.notEqual((await store.read(lock, true)).code, firstCode);
-            assert.equal((await rotate({ allocationId: randomUUID() })).status, 409);
-            assert.equal((await store.read(lock)).version, 2);
-        });
-        await t.test('scheduled and expired metadata; expiry permits new allocation', async () => {
-            const future = `${prefix}-future`;
-            const next = new Date(Date.now() + 3600000).toISOString();
-            const end = new Date(Date.now() + 7200000).toISOString();
-            const scheduled = await store.mutate(future, 'future-1', 'allocate', {
-                ...period, validFrom: next, validUntil: end,
-            });
-            assert.equal(scheduled.status, 'scheduled');
-            await pool.execute("UPDATE ras_simulator_lock SET valid_until = UTC_TIMESTAMP(3) - INTERVAL 1 SECOND WHERE lock_id = ?", [lock]);
-            await assert.rejects(() => store.read(lock, true), /no current/);
-            const renewed = await store.mutate(lock, 'renewal', 'allocate', period);
-            assert.notEqual(renewed.allocationId, allocation.allocationId);
-            assert.equal(renewed.version, 3);
-            await assert.rejects(
-                () => store.mutate(lock, 'stale-rotation', 'rotate', { allocationId: allocation.allocationId }),
-                /changed/,
-            );
-        });
-        await t.test('same allocation request is repeat-safe; different body conflicts', async () => {
-            const id = `${prefix}-replay`;
-            const first = await store.mutate(id, 'same-request', 'allocate', period);
-            assert.deepEqual(await store.mutate(id, 'same-request', 'allocate', period), first);
-            await assert.rejects(() => store.mutate(id, 'same-request', 'allocate', {
-                ...period, bookingReference: 'different',
-            }), /new request key/);
+            const [rows] = await pool.execute('SELECT version FROM ras_simulator_lock WHERE lock_id = ?', [uid]);
+            assert.equal(rows[0].version, 13);
         });
     } finally {
-        if (server) await new Promise(resolve => server.close(resolve));
-        await pool.execute('DELETE FROM ras_simulator_operation WHERE lock_id LIKE ?', [`${prefix}%`]);
-        await pool.execute('DELETE FROM ras_simulator_lock WHERE lock_id LIKE ?', [`${prefix}%`]);
+        if (server) await server.close();
+        await pool.execute('DELETE FROM ras_simulator_lock WHERE lock_id IN (?, ?)', [uid, otherUid]);
         await pool.end();
     }
 });

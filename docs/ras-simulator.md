@@ -1,126 +1,110 @@
-# RAS-inspired development simulator
+# API-only RAS-inspired simulator
 
-This is an additive extension of the existing React / Express / MySQL prototype.
-It does not replace the booking wizard, Python CLI, existing database tables, or
-assignment optimiser. PostgreSQL/Django migration remains a separate task.
+The simulator has **no web UI**. A caller supplies a locker UID and receives a
+new six-digit simulated code. It extends the existing Express/MySQL application;
+it does not replace the React booking flow or migrate the application database.
 
-## What is simulated
+## Contract
 
-Remote allocation and replacement of a numeric code, an explicit code reveal,
-and allocation metadata for a synthetic lock identifier and validity period.
-The [Euro-Locks RAS product page](https://www.euro-locks.com/en/products/smart-locks/remote-allocation-system/)
-is the product inspiration. Direct page retrieval returned HTTP 403 during this
-work; prior official product material describes remote allocation/third-party
-integration, but no actual vendor API specification was obtained.
+```http
+POST /api/ras-simulator/locks/{lockerUid}/code
+Authorization: Bearer <simulator-token>
+```
 
-**These are our own endpoints and semantics, not an emulation of a documented
-Euro-Locks wire protocol. Codes cannot open real locks.** Six digits, immediate
-replacement in simulator state, scheduled/expired statuses and idempotency are
-our development choices, not verified claims about RAS. There is no physical
-door status, master code, clock synchronisation, real revocation, vendor
-authentication, payment or booking entitlement in this simulator.
+No request body, booking reference, dates or allocation ID is required.
+
+```json
+{
+  "lockerUid": "f70e2490-794c-478e-a82d-9908a120fe37",
+  "code": "001234"
+}
+```
+
+Codes are strings to preserve leading zeroes. Each successful request generates
+a code different from the immediately preceding code for that UID and stores
+the replacement encrypted. Codes are not globally unique across lockers.
+Concurrent requests are serialised; only the last committed code is current.
+The response has `Cache-Control: no-store` and `X-RAS-Simulator: true`.
+
+UIDs accept 1-80 letters, digits, underscores or hyphens, including UUIDs.
+The simulator accepts caller-supplied UIDs; it does not register inventory or
+verify that a locker exists. Automatic UUID assignment and inventory integration
+are deferred to [issue #46](https://github.com/rrahn/spind/issues/46).
+
+Errors: 401 missing/incorrect token, 422 invalid UID, 500 storage failure.
+The old allocation/status/reveal/rotation endpoints and React workbench have been
+removed. This endpoint intentionally generates a new code on every request:
+it is **not idempotent**. Retrying after a lost response generates another code.
+The caller should serialise requests per UID and retain the most recent result.
+Booking/payment authorisation and reliable provider retries belong in the future
+integration, not this minimal simulator.
 
 ## Enable locally
 
-Copy `.env.example` to `.env` if needed; do not overwrite existing configuration.
-Set `RAS_SIMULATOR_ENABLED=true`. Generate **two independent** values:
+In the project-root `.env` (ignored by Git), set:
+
+```dotenv
+RAS_SIMULATOR_ENABLED=true
+RAS_SIMULATOR_TOKEN=<at-least-32-characters>
+RAS_SIMULATOR_KEY=<64-hexadecimal-characters>
+```
+
+Generate two independent values, one for each secret:
 
 ```sh
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Use one for `RAS_SIMULATOR_TOKEN` and one for `RAS_SIMULATOR_KEY`. Keep the key
-stable across restarts. Losing it makes existing simulated codes undecryptable.
-The token must be at least 32 characters; the key must be 64 hexadecimal digits.
-
-With the existing Compose setup, from the project root:
+Start the existing local stack from the project root:
 
 ```sh
 docker compose --env-file .env -f frontend/docker-compose.yml up --build
 ```
 
-Open `http://localhost:3000/ras-simulator`. The workbench uses the existing React
-bundle and Express app. Enter the simulator token in its password field; it stays
-in page memory only. Use synthetic lock IDs such as `locker-1-1` and opaque
-references such as `demo-booking`, not pupil data.
+Example request (export the token in your shell first):
 
-If running Express directly, export the simulator variables alongside its
-existing `MYSQL_*` configuration; the Node server does not load `.env` itself.
-`MYSQL_PORT` is optional and defaults to 3306.
-Normal app startup is unchanged when the simulator flag is absent or false;
-no simulator tables or endpoints are enabled.
-
-The workbench is a development tool, not a parent account dashboard. Its single
-development token is not a replacement for guardian/staff authentication. Keep
-the app bound to localhost as the current Compose configuration does. Do not
-enable this against production data or distribute the token to parents.
-
-## HTTP contract
-
-Base: `/api/ras-simulator`. Every endpoint requires
-`Authorization: Bearer <RAS_SIMULATOR_TOKEN>` and returns `Cache-Control: no-store`.
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/locks/{lockId}` | Current metadata only; unknown lock is 404. |
-| POST | `/locks/{lockId}/allocations` | Allocate a code, provided no current/scheduled allocation exists. |
-| POST | `/locks/{lockId}/reveal` | Explicitly retrieve a current/scheduled simulated code. |
-| POST | `/locks/{lockId}/rotate` | Replace the code for the specified current allocation. |
-
-Allocation/rotation require `Idempotency-Key`: 1-80 letters, digits, underscores
-or hyphens. Reusing the key with the same operation returns its original metadata
-without generating another code. A different operation/body with the same key
-is a 409 conflict. Retain the same key and payload across ambiguous network
-failures; the workbench offers that retry rather than silently creating a new
-operation. Replay results are historical; refresh status for the current version.
-
-Allocate body:
-
-```json
-{
-  "bookingReference": "demo-booking",
-  "validFrom": "2027-08-01T00:00:00.000Z",
-  "validUntil": "2028-07-31T23:59:59.000Z"
-}
+```sh
+curl --fail-with-body --request POST \
+  --header "Authorization: Bearer $RAS_SIMULATOR_TOKEN" \
+  http://localhost:3000/api/ras-simulator/locks/f70e2490-794c-478e-a82d-9908a120fe37/code
 ```
 
-Dates must be UTC ISO timestamps; end must follow start and be in the future.
-The status changes at these dates in simulator metadata, not on physical locks.
-Lock IDs allow 1-80 letters, digits, underscores or hyphens. Booking references
-allow the same alphabet, up to 100 characters. Rotations use:
+The simulator is disabled by default. Direct Node startup needs the simulator
+variables and existing `MYSQL_*` variables exported; Node does not load `.env`.
+`MYSQL_PORT` defaults to 3306. Keep the encryption key stable across restarts.
+Keep this development service on localhost; its shared token is not parent/staff
+authentication. Never enable it against production data.
 
-```json
-{ "allocationId": "the-uuid-returned-by-allocation" }
-```
+## Persistence and compatibility
 
-Successful requests return `simulator: true`, lock/allocation/reference IDs,
-`version`, validity dates and `status` (`active`, `scheduled`, `expired`, or
-`unallocated`). Only explicit reveal adds `code`. A new allocation after expiry
-gets a new allocation ID. A stale allocation ID cannot rotate the new allocation.
-Allocation never reserves or changes a real inventory row or paid booking.
+`ras_simulator_lock` stores the UID, AES-256-GCM encrypted current code and a
+generation counter. The key stays outside MySQL; random nonces and UID-associated
+authentication protect stored values. Row locking and transactions prevent lost
+updates. No plaintext codes are logged or stored.
 
-Errors are JSON `{ "code": "...", "error": "..." }`: 401 unauthenticated,
-404 unknown/disabled, 409 allocation/idempotency conflict, 422 invalid input, or
-500 storage failure. Never interpret a failure as successful code issuance.
+Existing simulator tables remain compatible: unused nullable allocation columns
+and the old operation-receipt table are left untouched rather than destructively
+dropped. No new receipts or allocations are written. No inventory migration is
+performed.
 
-## Persistence and tests
+## Tests
 
-Two additional InnoDB tables keep simulated state and operation receipts:
-`ras_simulator_lock` and `ras_simulator_operation`. Row locking serialises
-allocation/rotation; receipts are committed in the same transaction. Codes use
-AES-256-GCM with per-write random nonces and lock-ID authentication, with the key
-outside MySQL. Operation receipts contain metadata, not plaintext codes.
-No destructive reset, real-lock write, or master-code endpoint is exposed.
-
-From `frontend/`, run `yarn test:ras`. Pure HTTP/configuration validation runs
-without MySQL; integration tests explicitly report a skip unless configured.
-To run those tests, supply an **isolated disposable** MySQL database named
-`ras_test`, root credentials, and a localhost port:
+From `frontend/`, run `yarn test:ras`. For database tests, supply an isolated,
+disposable MySQL database named `ras_test`:
 
 ```sh
 RAS_TEST_MYSQL_PORT=3307 RAS_TEST_MYSQL_PASSWORD=... yarn test:ras
 ```
 
-Integration tests cover concurrent claims, encrypted storage, persistence,
-scheduled/expired access, explicit reveal, repeat-safe rotation, stale allocation
-protection and idempotency conflicts. Test-created rows are cleaned up.
+Database tests otherwise report an explicit skip. Tests cover token/UID
+validation, exact response shape, removed endpoints, explicit failures, rollback,
+encrypted persistence, code replacement and concurrent requests. Test-owned rows
+are cleaned up.
+
+## Limits
+
+The [Euro-Locks RAS page](https://www.euro-locks.com/en/products/smart-locks/remote-allocation-system/)
+is product inspiration, not a verified API contract. **These codes cannot open
+real locks.** Six digits and replacement semantics are simulation choices,
+not claims about real RAS behaviour. This does not emulate offline-lock
+revocation, door telemetry, master codes, payment, or booking entitlement.
