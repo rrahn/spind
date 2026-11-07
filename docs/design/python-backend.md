@@ -7,6 +7,11 @@ replacement React application. See the [decision](../adr/0001-django-postgresql-
 ## Tables and relationships
 
 All domain rows and guardian accounts have generated UUID primary keys.
+Each model lives in its own module under
+[`booking/models/`](../../backend/locker_tools/web/booking/models/).
+The package's `__init__.py` re-exports the public models, so callers continue to
+use `from locker_tools.web.booking.models import Locker, Pupil` without knowing
+the individual module layout. Model modules import their dependencies directly.
 Foreign keys use protective deletion: accidental deletion cannot cascade through
 pupil, payment or booking history. A future retention workflow must explicitly
 anonymise or remove records in the appropriate order.
