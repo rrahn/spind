@@ -41,12 +41,21 @@ lint:
     cd {{frontend_dir}} && yarn eslint .
 
 # Start the local stack via docker compose.
-up:
-    cd {{frontend_dir}} && docker compose up -d
+up: env
+    docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml up --build --wait --wait-timeout 600
+    @echo "Locker app: http://localhost:3000"
 
 # Stop the local stack.
 down:
-    cd {{frontend_dir}} && docker compose down
+    docker compose -f {{frontend_dir}}/docker-compose.yml down
+
+# Follow application and database logs.
+logs:
+    docker compose -f {{frontend_dir}}/docker-compose.yml logs --follow
+
+# Show container health and published ports.
+status:
+    docker compose -f {{frontend_dir}}/docker-compose.yml ps
 
 # --- placeholders, implemented by the epic noted in each message ---
 
