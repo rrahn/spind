@@ -1,14 +1,25 @@
 services:
   app:
     build: .
-    command: sh -c "yarn install && yarn run server-dev"
+    command: sh -c "yarn install --immutable && yarn run server-dev"
     ports:
       - 127.0.0.1:3000:3000
-      - 127.0.0.1:6006:6006
     working_dir: /app
     volumes:
       - ./:/app
+      - locker-app-node-modules:/app/node_modules
+      - locker-app-yarn-cache:/root/.yarn
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 60
     environment:
+      YARN_INSTALL_STATE_PATH: /app/node_modules/.yarn-install-state.gz
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
@@ -24,6 +35,14 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: lockerDB
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql --host=127.0.0.1 --user=root --database=$$MYSQL_DATABASE --execute='SELECT 1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   locker-mysql-data:
+  locker-app-node-modules:
+  locker-app-yarn-cache:
