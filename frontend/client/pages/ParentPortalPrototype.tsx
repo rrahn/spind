@@ -17,19 +17,23 @@ const examples: Child[] = [
 const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Jahresübersicht', C: 'Kinderverwaltung & Schließfächer' };
 
 function LockerIllustration() {
-    return <svg viewBox="0 0 420 380" role="img" aria-label="Illustration einer freundlichen Schließfachanlage">
-        <ellipse cx="210" cy="346" rx="165" ry="20" fill="#142d4220" />
-        <path d="M64 102 L324 66 L365 97 L365 326 L105 350 L64 321Z" fill="#14364b" />
-        <path d="M64 102 L324 66 L324 308 L64 321Z" fill="#5eaaa4" />
-        {[0, 1, 2].map(col => [0, 1].map(row => <g key={`${col}-${row}`}>
-            <rect x={77 + col * 79} y={111 + row * 98 - col * 10} width="67" height="89" rx="5" fill={col === 1 ? '#f6dba7' : '#d0e9df'} />
-            {[0, 1, 2].map(line => <path key={line} d={`M${89 + col * 79} ${126 + row * 98 - col * 10 + line * 5} h25`} stroke="#14364b" strokeWidth="2" opacity=".4" />)}
-            <rect x={128 + col * 79} y={149 + row * 98 - col * 10} width="5" height="15" rx="2" fill="#14364b" />
+    return <svg viewBox="0 0 420 380" role="img" aria-label="Frontalansicht einer Schließfachanlage mit sechs gleichmäßig angeordneten Türen">
+        <ellipse cx="210" cy="334" rx="145" ry="12" fill="#14364b" opacity=".08" />
+        <rect x="88" y="306" width="16" height="22" rx="4" fill="#14364b" />
+        <rect x="316" y="306" width="16" height="22" rx="4" fill="#14364b" />
+        <rect x="68" y="54" width="284" height="260" rx="14" fill="#286360" />
+        <rect x="72" y="58" width="276" height="248" rx="11" fill="#5eaaa4" />
+        <path d="M84 62 H336" stroke="#ffffff" strokeWidth="2" opacity=".35" strokeLinecap="round" />
+        {[0, 1, 2].map(col => [0, 1].map(row => <g key={`${col}-${row}`} transform={`translate(${82 + col * 88} ${72 + row * 116})`}>
+            <rect y="3" width="80" height="104" rx="7" fill="#14364b" opacity=".12" />
+            <rect width="80" height="104" rx="7" fill={col === 1 ? '#f6dba7' : '#d0e9df'} />
+            <rect x="2" y="2" width="76" height="100" rx="5" fill="none" stroke="#ffffff" opacity=".45" />
+            {[0, 1, 2].map(line => <path key={line} d={`M14 ${18 + line * 5} h26`} stroke="#14364b" strokeWidth="2" opacity=".35" strokeLinecap="round" />)}
+            <rect x="14" y="48" width="22" height="14" rx="3" fill="#fffefa" opacity=".7" />
+            <text x="25" y="58" textAnchor="middle" fontSize="8" fontFamily="sans-serif" fontWeight="600" fill="#286360">{String(row * 3 + col + 1).padStart(2, '0')}</text>
+            <rect x="61" y="49" width="6" height="20" rx="3" fill="#14364b" />
+            <circle cx="64" cy="78" r="3" fill="#14364b" opacity=".45" />
         </g>))}
-        <circle cx="332" cy="54" r="25" fill="#f6dba7" />
-        <path d="M30 254 Q5 227 20 204 Q46 218 30 254 M32 284 Q52 245 66 257 Q68 281 32 284" fill="#5eaaa4" />
-        <path d="M31 310 L28 235" stroke="#14364b" strokeWidth="3" />
-        <path d="M16 301 H47 L42 329 H21Z" fill="#edb98d" />
     </svg>;
 }
 
