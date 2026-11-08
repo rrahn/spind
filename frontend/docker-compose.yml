@@ -1,18 +1,79 @@
 services:
+  backend:
+    build: ../backend
+    ports:
+      - 127.0.0.1:8000:8000
+    environment:
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Run just env to configure a local Django secret}
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-lockerdb}
+      POSTGRES_USER: ${POSTGRES_USER:-locker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: 1025
+      LOCKER_FRONTEND_URL: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  postgres:
+    image: postgres:17-alpine
+    volumes:
+      - locker-postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-locker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-lockerdb}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - 127.0.0.1:8025:8025
+
   app:
     build: .
-    command: sh -c "yarn install && yarn run server-dev"
+    command: sh -c "yarn install --immutable && yarn run server-dev"
     ports:
       - 127.0.0.1:3000:3000
-      - 127.0.0.1:6006:6006
     working_dir: /app
     volumes:
       - ./:/app
+      - locker-app-node-modules:/app/node_modules
+      - locker-app-yarn-cache:/root/.yarn
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => { if (!r.ok) process.exit(1); }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 60
     environment:
+      YARN_INSTALL_STATE_PATH: /app/node_modules/.yarn-install-state.gz
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: lockerDB
+      RAS_SIMULATOR_ENABLED: ${RAS_SIMULATOR_ENABLED:-false}
+      RAS_SIMULATOR_TOKEN: ${RAS_SIMULATOR_TOKEN:-}
+      RAS_SIMULATOR_KEY: ${RAS_SIMULATOR_KEY:-}
 
   mysql:
     image: mysql:8.0
@@ -21,6 +82,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: lockerDB
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql --host=127.0.0.1 --user=root --database=$$MYSQL_DATABASE --execute='SELECT 1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
+  locker-postgres-data:
   locker-mysql-data:
+  locker-app-node-modules:
+  locker-app-yarn-cache:

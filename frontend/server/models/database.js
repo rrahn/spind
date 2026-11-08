@@ -1,6 +1,7 @@
 const waitPort = require('wait-port');
 const fs = require('fs');
 const mysql = require('mysql2/promise');
+const { RasSimulatorStore } = require('../rasSimulator');
 
 const {
     MYSQL_HOST: HOST,
@@ -11,6 +12,7 @@ const {
     MYSQL_PASSWORD_FILE: PASSWORD_FILE,
     MYSQL_DB: DB,
     MYSQL_DB_FILE: DB_FILE,
+    MYSQL_PORT: PORT = '3306',
 } = process.env;
 
 let pool;
@@ -71,7 +73,7 @@ async function init() {
 
     await waitPort({
         host,
-        port: 3306,
+        port: Number(PORT),
         timeout: 10000,
         waitForDns: true,
     });
@@ -79,10 +81,12 @@ async function init() {
     pool = mysql.createPool({
         connectionLimit: 5,
         host,
+        port: Number(PORT),
         user,
         password,
         database,
         charset: 'utf8mb4',
+        timezone: 'Z',
     });
 
     const promiseCreateLockerTbl = createLockerTable();
@@ -98,6 +102,12 @@ async function init() {
 
 async function teardown() {
     await pool.end();
+}
+
+async function createRasSimulator(key) {
+    const store = new RasSimulatorStore(pool, key);
+    await store.init();
+    return store;
 }
 
 async function getFloorMaps() {
@@ -363,6 +373,7 @@ async function releaseLockers() {
 
 module.exports = {
     init,
+    createRasSimulator,
     teardown,
     getFloorMaps,
     getLockerUnits,

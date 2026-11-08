@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const db = require('./models/database.js');
 const { Server } = require("socket.io");
+const { configuration, simulatorRouter } = require('./rasSimulator');
+const simulatorConfig = configuration();
 
 // Middleware functions
 const getFloorMaps = require('./routes/getFloorMaps.js');
@@ -132,7 +134,11 @@ setInterval(async () => {
 }, 60000); // Runs every minute
 
 // Start the server
-db.init().then(() => {
+db.init().then(async () => {
+  if (simulatorConfig) {
+    const store = await db.createRasSimulator(simulatorConfig.key);
+    app.use('/api/ras-simulator', simulatorRouter(store, simulatorConfig.token));
+  }
 
   server.listen(port, () => {
     console.log('######################');

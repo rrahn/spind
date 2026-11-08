@@ -6,7 +6,7 @@ from locker_tools.assignee import Assignee
 from locker_tools.assignee_source import from_orders
 from locker_tools.assigner import assign_lockers
 from locker_tools.locker_manager import LockerManager
-from locker_tools.output import render_table, write_csv
+from locker_tools.output import render_available_table, render_table, write_csv
 from locker_tools.roster import RosterManager
 
 
@@ -84,6 +84,20 @@ def roster(database, output_path, grade, min_row, max_row, open_after):
         manager.write_html(output_path, open_after=open_after, grade=grade)
     except KeyError as exc:
         raise click.UsageError(str(exc).strip('"')) from exc
+
+
+@cli.command()
+@click.option('--database', required=True, type=click.Path(exists=True, dir_okay=False),
+              help='Excel workbook with the locker database on its second sheet.')
+def available(database):
+    """List the available lockers, grouped by floor (one table per floor).
+
+    A locker is available when it is neither occupied (Besetzt) nor defect
+    (Defekt), and has more than one issuable key (a single or missing key
+    means it cannot be handed out with a spare).
+    """
+    manager = LockerManager.from_excel(database)
+    render_available_table(manager.available_lockers_by_floor())
 
 
 if __name__ == '__main__':
