@@ -1,0 +1,138 @@
+// Throwaway parent-portal preview: three layouts selected by ?variant=A/B/C.
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import './ParentPortalPrototype.css';
+
+type Child = { id: number; name: string; className: string; room: string; locker?: string };
+type Variant = 'A' | 'B' | 'C';
+const examples: Child[] = [
+    { id: 1, name: 'Mila Beispiel', className: '8N', room: '204', locker: 'B-024' },
+    { id: 2, name: 'Jonas Beispiel', className: '5A', room: '108' },
+];
+const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Jahresübersicht', C: 'Familienbereich' };
+
+function LockerIllustration() {
+    return <svg viewBox="0 0 420 380" role="img" aria-label="Illustration einer freundlichen Schließfachanlage">
+        <ellipse cx="210" cy="346" rx="165" ry="20" fill="#142d4220" />
+        <path d="M64 102 L324 66 L365 97 L365 326 L105 350 L64 321Z" fill="#14364b" />
+        <path d="M64 102 L324 66 L324 308 L64 321Z" fill="#5eaaa4" />
+        {[0, 1, 2].map(col => [0, 1].map(row => <g key={`${col}-${row}`}>
+            <rect x={77 + col * 79} y={111 + row * 98 - col * 10} width="67" height="89" rx="5" fill={col === 1 ? '#f6dba7' : '#d0e9df'} />
+            {[0, 1, 2].map(line => <path key={line} d={`M${89 + col * 79} ${126 + row * 98 - col * 10 + line * 5} h25`} stroke="#14364b" strokeWidth="2" opacity=".4" />)}
+            <rect x={128 + col * 79} y={149 + row * 98 - col * 10} width="5" height="15" rx="2" fill="#14364b" />
+        </g>))}
+        <circle cx="332" cy="54" r="25" fill="#f6dba7" />
+        <path d="M30 254 Q5 227 20 204 Q46 218 30 254 M32 284 Q52 245 66 257 Q68 281 32 284" fill="#5eaaa4" />
+        <path d="M31 310 L28 235" stroke="#14364b" strokeWidth="3" />
+        <path d="M16 301 H47 L42 329 H21Z" fill="#edb98d" />
+    </svg>;
+}
+
+function Brand() {
+    return <div className="pp-brand"><span aria-hidden="true">s.</span><div>Schulfach<small>Ein guter Platz für deinen Schulalltag.</small></div></div>;
+}
+
+function ChildCard({ child, year, onAction }: { child: Child; year: string; onAction: (message: string) => void }) {
+    return <article className="pp-child">
+        <div className="pp-child-top"><span className="pp-avatar">{child.name[0]}</span><span className={`pp-tag ${child.locker ? 'pp-tag-ready' : ''}`}>{child.locker ? 'Gebucht' : 'Noch kein Schließfach'}</span></div>
+        <h3>{child.name}</h3>
+        <p>Klasse {child.className} <span>·</span> Raum {child.room}</p>
+        <div className="pp-allocation">{child.locker ? <><small>Schließfach · {year}</small><strong>{child.locker}</strong><span>1. Obergeschoss · Gebäudeteil B</span></> : <><small>Schuljahr {year}</small><strong>Ein Platz für den Schulalltag</strong><span>Wähle ein Fach in der Nähe des Klassenraums.</span></>}</div>
+        <button className={child.locker ? 'pp-secondary' : 'pp-primary'} onClick={() => onAction(child.locker ? `Buchungsdetails für ${child.name}: nur eine Vorschau, kein echter Zugangscode.` : `${child.name} ist für die Buchung ausgewählt. Die echte Schließfachauswahl wird später angebunden.`)}>{child.locker ? 'Buchung ansehen' : 'Schließfach buchen'} <span aria-hidden="true">↗</span></button>
+        <button className="pp-text" onClick={() => onAction(`Die Angaben für ${child.name} lassen sich später hier bearbeiten.`)}>Kind bearbeiten</button>
+    </article>;
+}
+
+export default function ParentPortalPrototype() {
+    const [params, setParams] = useSearchParams();
+    const variant: Variant = params.get('variant') === 'B' ? 'B' : params.get('variant') === 'C' ? 'C' : 'A';
+    const dashboard = params.get('view') === 'dashboard';
+    const [register, setRegister] = useState(false);
+    const [children, setChildren] = useState<Child[]>(examples);
+    const [year, setYear] = useState('2027/28');
+    const [message, setMessage] = useState('');
+    const [adding, setAdding] = useState(false);
+    const [childName, setChildName] = useState('');
+    const [childClass, setChildClass] = useState('5A');
+    const [reviewed, setReviewed] = useState(false);
+
+    function navigate(view: string, nextVariant = variant) {
+        setParams({ preview: 'parents', view, variant: nextVariant });
+        setMessage('');
+    }
+    function cycle(direction: number) {
+        const keys: Variant[] = ['A', 'B', 'C'];
+        navigate(dashboard ? 'dashboard' : 'login', keys[(keys.indexOf(variant) + direction + 3) % 3]);
+    }
+    useEffect(() => {
+        function onKey(event: KeyboardEvent) {
+            if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, button, [contenteditable]')) return;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                event.preventDefault();
+                cycle(event.key === 'ArrowLeft' ? -1 : 1);
+            }
+        }
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [variant, dashboard]);
+
+    function addChild(event: React.FormEvent) {
+        event.preventDefault();
+        setChildren([...children, { id: Date.now(), name: childName.trim(), className: childClass, room: 'Noch nicht zugeordnet' }]);
+        setChildName('');
+        setAdding(false);
+        setMessage('Vorschau-Kind hinzugefügt. Die Daten werden nicht gespeichert.');
+    }
+
+    const yearControl = <label className="pp-year">Schuljahr<select value={year} onChange={event => setYear(event.target.value)}><option>2027/28</option><option>2026/27</option></select></label>;
+    const addButton = <button className="pp-secondary" onClick={() => setAdding(true)}>+ Kind hinzufügen</button>;
+    const historical = year !== '2027/28';
+    const cards = children.map(child => <ChildCard key={child.id} child={child} year="2027/28" onAction={setMessage} />);
+    const history = <section className="pp-empty"><span className="pp-eyebrow">ARCHIV · {year}</span><h3>Buchungen aus dem vergangenen Schuljahr</h3>{children.some(child => child.id === 1) ? <p>Mila Beispiel · Klasse 7N · Schließfach A-018 · Beendet</p> : <p>Keine Beispielbuchungen für dieses Schuljahr.</p>}<p>Vergangene Buchungen sind nur lesbar. Eine neue Buchung beginnt im aktuellen Buchungsjahr.</p></section>;
+    const empty = <div className="pp-empty"><h3>Alles beginnt mit deinem Kind.</h3><p>Lege zuerst ein Kinderprofil an. Danach kannst du ein Schließfach auswählen.</p>{addButton}</div>;
+    const archive = <section className="pp-archive"><details><summary>Vergangene Buchungen <span>{children.some(child => child.id === 1) ? '1 Beispielbuchung' : 'Keine Beispielbuchungen'}</span></summary>{children.some(child => child.id === 1) && <p>Mila Beispiel · 2026/27 · A-018 · Beendet</p>}<p>Alte Buchungen bleiben im Archiv. Ein neues Schuljahr erhält eine eigene Buchung.</p></details></section>;
+
+    return <div className={`pp-root pp-variant-${variant}`}>
+        <div className="pp-preview-label"><strong>Designvorschau</strong> · Alle Namen und Buchungen sind erfunden. Keine echte Anmeldung oder Zahlung.</div>
+        {!dashboard ? <main className="pp-auth">
+            <section className="pp-auth-form">
+                <Brand />
+                <div className="pp-auth-content">
+                    <span className="pp-eyebrow">WILLKOMMEN IM ELTERNPORTAL</span>
+                    <h1>{register ? 'Ein guter Anfang.' : 'Schön, dass du da bist.'}</h1>
+                    <p>Kinder verwalten. Schließfächer buchen.<br />Alles an einem Ort, für jedes Schuljahr.</p>
+                    <div className="pp-tabs"><button aria-pressed={!register} onClick={() => setRegister(false)}>Anmelden</button><button aria-pressed={register} onClick={() => setRegister(true)}>Registrieren</button></div>
+                    <form onSubmit={event => { event.preventDefault(); navigate('dashboard'); }}>
+                        <label>E-Mail-Adresse<input type="email" placeholder="name@beispiel.de" autoComplete="off" /></label>
+                        <label>Passwort<input type="password" placeholder="Bitte keine echten Zugangsdaten eingeben" autoComplete="off" /></label>
+                        {!register && <button type="button" className="pp-text pp-reset" onClick={() => setMessage('Passwort zurücksetzen wird später mit der sicheren Anmeldung verbunden.')}>Passwort vergessen?</button>}
+                        {register && <p className="pp-form-note">Im echten Portal bestätigst du zuerst deine E-Mail-Adresse. Diese Vorschau erstellt kein Konto.</p>}
+                        <button className="pp-primary" type="submit">Demo-Dashboard öffnen <span aria-hidden="true">→</span></button>
+                    </form>
+                    <p className="pp-form-note">Du kannst die Demo auch ohne Eingaben öffnen.</p>
+                    {message && <p role="status" className="pp-notice">{message}</p>}
+                </div>
+                <footer>Ein Angebot deines Fördervereins · Vorschau</footer>
+            </section>
+            <section className="pp-auth-art"><span className="pp-art-badge">Weniger tragen. Mehr Freiraum.</span><LockerIllustration /><h2>Ein kleines Fach.<br />Ein leichterer Schultag.</h2><p>Ein sicherer Platz für Bücher, Sportsachen<br />und alles, was morgen wieder gebraucht wird.</p><div className="pp-art-dots"><span /> Für Kinder. Für Eltern. Für unsere Schule.</div></section>
+        </main> : <>
+            <header className="pp-header"><Brand /><nav aria-label="Elternportal"><button onClick={() => navigate('dashboard')}>Übersicht</button><button onClick={() => setMessage('Hilfe und Support werden später mit dem Portal verbunden.')}>Hilfe</button><button className="pp-account" onClick={() => navigate('login')}>Demo verlassen</button></nav></header>
+            <main className="pp-dashboard">
+                {variant === 'A' && <>
+                    <section className="pp-welcome"><div><span className="pp-eyebrow">DEIN ELTERNPORTAL</span><h1>Hallo, Familie Beispiel.</h1><p>Ein guter Platz für jedes deiner Kinder.</p></div>{yearControl}</section>
+                    <section className="pp-review"><span aria-hidden="true">✦</span><div><strong>{reviewed ? 'Klassenangaben geprüft' : 'Bereit für das neue Schuljahr?'}</strong><p>{reviewed ? 'Nur in dieser Vorschau bestätigt.' : 'Bitte prüfe die vorgeschlagenen Klassen deiner Kinder.'}</p></div><button className="pp-secondary" onClick={() => { setReviewed(true); setMessage('Klassenprüfung in der Vorschau bestätigt. Automatische Fortschreibung gehört zum separaten Backend-Sprint.'); }}>{reviewed ? 'Erneut prüfen' : 'Angaben prüfen'}</button></section>
+                    <section><div className="pp-section-heading"><h2>{historical ? 'Vergangene Buchungen' : 'Meine Kinder'} <small>{children.length}</small></h2>{addButton}</div><div className="pp-card-grid">{historical ? history : children.length ? cards : empty}</div></section>{!historical && archive}
+                </>}
+                {variant === 'B' && <>
+                    <section className="pp-welcome"><div><span className="pp-eyebrow">ALLES FÜR DIESES SCHULJAHR</span><h1>Deine Buchungsübersicht.</h1><p>Ein Jahr. Alle Kinder. Alles im Blick.</p></div>{yearControl}</section>
+                    <div className="pp-year-layout"><section className="pp-year-summary"><span className="pp-eyebrow">SCHULJAHR {year}</span><h2>{historical ? 'Ein Blick zurück.' : `${children.filter(child => child.locker).length} Schließfach schon gebucht.`}</h2><p>{historical ? 'Hier bleiben vergangene Buchungen sichtbar.' : 'Wähle ein Kind aus, um seine Buchung anzusehen oder ein neues Fach zu finden.'}</p>{addButton}<LockerIllustration /></section><section className="pp-roster"><h2>Kinder & Buchungen</h2>{historical ? history : children.length ? children.map(child => <article key={child.id} className="pp-roster-row"><span className="pp-avatar">{child.name[0]}</span><div><h3>{child.name}</h3><p>{child.className} · Raum {child.room}</p></div><span className="pp-tag">{child.locker || 'Noch offen'}</span><button className="pp-secondary" onClick={() => setMessage(`${child.name}: ${child.locker ? 'Buchungsdetails' : 'Schließfachauswahl'} ist nur eine Vorschau.`)}>{child.locker ? 'Ansehen' : 'Buchen'}</button></article>) : empty}{!historical && archive}</section></div>
+                </>}
+                {variant === 'C' && <div className="pp-family-layout"><aside className="pp-family-sidebar"><span className="pp-eyebrow">FAMILIE BEISPIEL</span><h1>Unser<br />Schulalltag.</h1>{yearControl}<button className="pp-primary" onClick={() => setYear('2027/28')}>Meine Kinder</button><button className="pp-text" onClick={() => setYear('2026/27')}>Buchungsarchiv</button>{addButton}<p>Ein Kinderprofil bleibt.<br />Die Buchung gilt für ein Jahr.</p></aside><section><div className="pp-section-heading"><div><h2>Alles an seinem Platz.</h2><p>Verwalte die Schließfächer deiner Kinder.</p></div></div><div className="pp-family-cards">{historical ? history : children.length ? cards : empty}</div>{!historical && archive}</section></div>}
+                <div className="pp-demo-controls"><button className="pp-text" onClick={() => { setChildren(children.length ? [] : examples); setMessage('Beispielzustand geändert; keine echten Daten betroffen.'); }}>{children.length ? 'Leere Familie testen' : 'Beispielkinder laden'}</button></div>
+                {message && <p className="pp-notice" role="status">{message}</p>}
+                {adding && <section className="pp-add-child" aria-labelledby="pp-add-title"><h2 id="pp-add-title">Vorschau-Kind hinzufügen</h2><form onSubmit={addChild}><label>Name<input required value={childName} onChange={event => setChildName(event.target.value)} placeholder="Nur einen erfundenen Namen verwenden" /></label><label>Klasse<select value={childClass} onChange={event => setChildClass(event.target.value)}><option>5A</option><option>7N</option><option>8N</option></select></label><div><button className="pp-primary" disabled={!childName.trim()}>Zur Vorschau hinzufügen</button><button type="button" className="pp-text" onClick={() => setAdding(false)}>Abbrechen</button></div></form></section>}
+            </main>
+        </>}
+        {process.env.NODE_ENV !== 'production' && <aside className="pp-switcher" aria-label="Designvarianten"><button aria-label="Vorherige Variante" onClick={() => cycle(-1)}>←</button><div><strong>{variant} · {names[variant]}</strong><small>{dashboard ? `${children.length} Beispielkinder · Jahr ${year} · nur im Speicher` : 'Login / Registrierung · keine Authentifizierung'}</small></div><button aria-label="Nächste Variante" onClick={() => cycle(1)}>→</button></aside>}
+    </div>;
+}

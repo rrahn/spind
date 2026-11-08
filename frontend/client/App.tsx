@@ -1,6 +1,6 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, useSearchParams } from 'react-router-dom';
 
 import LockerOrderForm from './components/LockerOrderForm';
 import ErrorPage from './components/ErrorPage';
@@ -9,11 +9,19 @@ import FormPageContact from './pages/FormPageContact';
 import FormPageLocker from './pages/FormPageLocker';
 import FormPagePayment from './pages/FormPagePayment';
 import FormPageSummary from './pages/FormPageSummary';
+import ParentPortalPrototype from './pages/ParentPortalPrototype';
+
+function ParentPreviewEntry() {
+  const [params] = useSearchParams();
+  return process.env.NODE_ENV !== 'production' && params.get('preview') === 'parents'
+    ? <ParentPortalPrototype />
+    : <FormPage />;
+}
 
 const router = createBrowserRouter([  // This is the router configuration
   {
     path: "/",
-    element: <FormPage />,
+    element: <ParentPreviewEntry />,
     errorElement: <ErrorPage />,
     children: [
       {
