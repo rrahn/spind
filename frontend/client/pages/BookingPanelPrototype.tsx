@@ -17,6 +17,10 @@ function MapIcon() {
     return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Z M9 3v16 M15 5v16" /></svg>;
 }
 
+function BookingField({ caption, children }: { caption: string; children: React.ReactNode }) {
+    return <div><dt>{caption}</dt><dd>{children}</dd></div>;
+}
+
 export default function BookingPanelPrototype({ children, bookings, bookingOpen }: { children: Child[]; bookings: Booking[]; bookingOpen: boolean }) {
     const [cancelled, setCancelled] = useState<number[]>([]);
     const [problems, setProblems] = useState<Record<number, string>>({});
@@ -55,8 +59,12 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
             </div>
             <div className="pp-compact-info">
                 <div className="pp-booking-badges"><span className="pp-tag pp-tag-ready">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>{problems[booking.id] && <span className="pp-tag pp-problem-tag">Problem gemeldet · Offen</span>}</div>
-                <dl className="pp-booking-meta"><div><dt>Kind</dt><dd>{childName(booking)}</dd></div><div><dt>Buchungszeitraum</dt><dd>Schuljahr {booking.year}</dd></div></dl>
-                <div className="pp-location"><span>{booking.location}</span><button className="pp-map-button" aria-label="Ort auf Schulkarte anzeigen" onClick={() => open('map', booking)}><MapIcon /></button></div>
+                <dl className="pp-booking-meta">
+                    <BookingField caption="Kind">{childName(booking)}</BookingField>
+                    <BookingField caption="Buchungszeitraum">Schuljahr {booking.year}</BookingField>
+                    <BookingField caption="Ort"><span className="pp-location"><span>{booking.location}</span><button className="pp-map-button" aria-label="Ort auf Schulkarte anzeigen" onClick={() => open('map', booking)}><MapIcon /></button></span></BookingField>
+                    <BookingField caption="Klassenraum">{children.find(child => child.id === booking.childId)?.room || 'Noch nicht zugeordnet'}</BookingField>
+                </dl>
                 <div className="pp-booking-actions"><button className="pp-secondary" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button><button className="pp-text pp-danger-text" onClick={() => open('cancel', booking)}>Vorzeitig kündigen</button></div>
             </div>
         </article>)}</div>
@@ -65,7 +73,7 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
         {bookingOpen && eligible.map(child => <section className="pp-compact-availability" key={child.id}>
             <h2>Schließfach buchen</h2>
             <div className="pp-booking-offer">
-                <dl className="pp-booking-meta"><div><dt>Kind</dt><dd>{child.name}</dd></div><div><dt>Buchungszeitraum</dt><dd>Schuljahr 2027/28</dd></div></dl>
+                <dl className="pp-booking-meta"><BookingField caption="Kind">{child.name}</BookingField><BookingField caption="Buchungszeitraum">Schuljahr 2027/28</BookingField></dl>
                 <button className="pp-primary" onClick={() => setMessage(`Vorschau: Schließfachauswahl für ${child.name}. Es wird keine echte Buchung erstellt.`)}>Jetzt buchen<span className="pp-sr-only"> für {child.name}</span></button>
             </div>
         </section>)}
