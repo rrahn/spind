@@ -62,14 +62,17 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
         </article>)}</div>
         {!current.length && <p className="pp-compact-empty">Keine laufende Buchung.</p>}
         {cancelled.length > 0 && <p className="pp-notice">Vorschau: Das gekündigte Fach ist wieder frei. Es wurde kein echtes Schließfach freigegeben.</p>}
-        <section className="pp-compact-availability">
-            <h2>{bookingOpen ? 'Schließfach buchen' : 'Buchung derzeit geschlossen'}</h2>
-            {bookingOpen && eligible.map(child => <article className="pp-booking-offer" key={child.id}>
+        {bookingOpen && eligible.map(child => <section className="pp-compact-availability" key={child.id}>
+            <h2>Schließfach buchen</h2>
+            <div className="pp-booking-offer">
                 <dl className="pp-booking-meta"><div><dt>Kind</dt><dd>{child.name}</dd></div><div><dt>Buchungszeitraum</dt><dd>Schuljahr 2027/28</dd></div></dl>
-                <button className="pp-primary" onClick={() => setMessage(`Vorschau: Schließfachauswahl für ${child.name}. Es wird keine echte Buchung erstellt.`)}>Schließfach buchen<span className="pp-sr-only"> für {child.name}</span></button>
-            </article>)}
-            <p>{!bookingOpen ? 'Die Verwaltung hat keine neue Buchung freigegeben. Bestehende Buchungen bleiben sichtbar.' : !children.length ? 'Registriere zuerst ein Kind in der Kinderverwaltung.' : !eligible.length ? 'Für alle Kinder ist bereits ein Schließfach gebucht.' : 'Von der Verwaltung freigegeben.'}</p>
-        </section>
+                <button className="pp-primary" onClick={() => setMessage(`Vorschau: Schließfachauswahl für ${child.name}. Es wird keine echte Buchung erstellt.`)}>Jetzt buchen<span className="pp-sr-only"> für {child.name}</span></button>
+            </div>
+        </section>)}
+        {(!bookingOpen || !eligible.length) && <section className="pp-compact-availability">
+            <h2>{bookingOpen ? 'Schließfach buchen' : 'Buchung derzeit geschlossen'}</h2>
+            <p>{!bookingOpen ? 'Die Verwaltung hat keine neue Buchung freigegeben. Bestehende Buchungen bleiben sichtbar.' : !children.length ? 'Registriere zuerst ein Kind in der Kinderverwaltung.' : 'Für alle Kinder ist bereits ein Schließfach gebucht.'}</p>
+        </section>}
         <section className="pp-compact-history"><h2>Ältere Buchungen</h2><div className="pp-history-scroll" tabIndex={0} role="region" aria-label="Ältere Buchungen – scrollbare Liste">
             {history.map(booking => <article key={booking.id}><div><strong>{booking.locker}</strong><span>{booking.childName}</span><span>Schuljahr {booking.year}</span></div><span className="pp-tag">{cancelled.includes(booking.id) ? 'Gekündigt' : 'Beendet'}</span></article>)}
         </div></section>

@@ -14,6 +14,7 @@ const exampleBookings: Booking[] = [
 const examples: Child[] = [
     { id: 1, name: 'Mila Beispiel', className: '8N', room: '204', locker: 'B-024' },
     { id: 2, name: 'Jonas Beispiel', className: '5A', room: '108' },
+    { id: 3, name: 'Lea Beispiel', className: '7N', room: '203' },
 ];
 const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Kompakte Buchungen & Aktionen', C: 'Kinderverwaltung & Schließfächer' };
 
