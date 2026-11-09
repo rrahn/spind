@@ -1,5 +1,8 @@
 .pp-variant-B .pp-management-layout { grid-template-columns: 250px minmax(0, 1fr); gap: 30px; }
 .pp-compact-panel { min-width: 0; }
+.pp-root.pp-variant-B .pp-management-sidebar > .pp-section-heading h2,
+.pp-root.pp-variant-B .pp-booking-panel > .pp-section-heading h1,
+.pp-root.pp-variant-B .pp-compact-history > h2 { font-size: 23px; }
 .pp-variant-B .pp-profile-heading { display: block; }
 .pp-variant-B .pp-profile-heading h3 { overflow-wrap: anywhere; }
 .pp-variant-B .pp-profile-heading p { margin-top: 6px; }
