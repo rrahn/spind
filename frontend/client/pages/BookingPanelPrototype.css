@@ -21,7 +21,7 @@
 .pp-booking-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 20px; }
 .pp-secondary-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .pp-compact-booking .pp-secondary { font-size: 12px; padding: 10px 13px; }
-.pp-secondary-actions h3 { font-size: 11px; font-weight: 600; color: var(--pp-muted); text-align: right; }
+.pp-secondary-actions h3 { font-size: 11px; font-weight: 600; color: var(--pp-muted); text-align: left; }
 .pp-compact-booking .pp-report-button { color: #805119; border-color: #d5a15d; background: #fff7e9; }
 .pp-compact-booking .pp-report-button:hover { background: #fae4bd; }
 .pp-compact-booking .pp-cancel-button { color: #9b4036; border-color: #d9a69e; background: #fff2ee; }
