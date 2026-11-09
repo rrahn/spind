@@ -16,6 +16,11 @@ const examples: Child[] = [
     { id: 2, name: 'Jonas Beispiel', className: '5A', room: '108' },
     { id: 3, name: 'Lea Beispiel', className: '7N', room: '203' },
 ];
+const longNameExamples: Child[] = [
+    { ...examples[0], name: 'Mila Alexandra von Hohenberg-Schneider' },
+    { ...examples[1], name: 'Jonas Maximilian Becker-Langenfeld' },
+    { ...examples[2], name: 'Lea Charlotte Sommer-Winterhausen' },
+];
 const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Kompakte Buchungen & Aktionen', C: 'Kinderverwaltung & Schließfächer' };
 
 function LockerIllustration() {
@@ -150,11 +155,12 @@ export default function ParentPortalPrototype() {
                     <aside className="pp-management-sidebar" aria-labelledby="pp-children-heading">
                         <div className="pp-section-heading"><h2 id="pp-children-heading">Meine Kinder</h2><span className="pp-count">{children.length}</span></div>
                         <div className="pp-profile-list">{children.map(child => <article key={child.id} className="pp-profile">
-                            <div className="pp-profile-heading"><span className="pp-avatar">{child.name[0]}</span><div><h3>{child.name}</h3><p>Klasse {child.className}</p></div></div>
+                            <div className="pp-profile-heading">{variant !== 'B' && <span className="pp-avatar">{child.name[0]}</span>}<div><h3>{child.name}</h3><p>Klasse {child.className}</p></div></div>
                             <button className="pp-text" onClick={() => { setEditingChild(child.id); setChildName(child.name); setChildClass(child.className); setAdding(true); }}>Angaben bearbeiten<span className="pp-sr-only"> für {child.name}</span></button>
                         </article>)}</div>
                         {!children.length && <p className="pp-profile-empty">Noch keine Kinder registriert.</p>}
                         {addButton}
+                        {variant === 'B' && <button className="pp-text" onClick={() => { setChildren(longNameExamples); setMessage('Vorschau mit erfundenen langen Namen. Keine echten Daten betroffen.'); }}>Lange Namen testen</button>}
                     </aside>
                     {variant === 'B' ? <BookingPanelPrototype children={children} bookings={exampleBookings} bookingOpen={bookingOpen} /> : <section className="pp-booking-panel" aria-labelledby="pp-bookings-heading">
                         <div className="pp-section-heading"><h1 id="pp-bookings-heading">Meine Schließfächer</h1><span className="pp-count">{currentBookings.length} gebucht</span></div>
