@@ -21,6 +21,39 @@ function BookingField({ caption, children }: { caption: string; children: React.
     return <div><dt>{caption}</dt><dd>{children}</dd></div>;
 }
 
+function BookingActions({ hasProblem, onProblem, onCancel }: { hasProblem: boolean; onProblem: () => void; onCancel: () => void }) {
+    const disclosure = useRef<HTMLDetailsElement>(null);
+
+    useEffect(() => {
+        function dismiss(event: PointerEvent) {
+            if (event.target instanceof Node && !disclosure.current?.contains(event.target)) disclosure.current?.removeAttribute('open');
+        }
+        document.addEventListener('pointerdown', dismiss);
+        return () => document.removeEventListener('pointerdown', dismiss);
+    }, []);
+
+    function select(action: () => void) {
+        disclosure.current?.removeAttribute('open');
+        action();
+    }
+
+    return <details ref={disclosure} className="pp-action-disclosure" onKeyDown={event => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            disclosure.current?.removeAttribute('open');
+            disclosure.current?.querySelector('summary')?.focus();
+        }
+    }} onBlur={event => {
+        if (!event.currentTarget.contains(event.relatedTarget)) disclosure.current?.removeAttribute('open');
+    }}>
+        <summary><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>Weitere Aktionen</summary>
+        <div className="pp-action-dropdown">
+            <button onClick={() => select(onProblem)}>{hasProblem ? 'Problem ansehen' : 'Problem melden'}</button>
+            <button className="pp-action-cancel" onClick={() => select(onCancel)}>Fach kündigen</button>
+        </div>
+    </details>;
+}
+
 export default function BookingPanelPrototype({ children, bookings, bookingOpen }: { children: Child[]; bookings: Booking[]; bookingOpen: boolean }) {
     const [cancelled, setCancelled] = useState<number[]>([]);
     const [problems, setProblems] = useState<Record<number, string>>({});
@@ -69,10 +102,7 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
             </div>
             <div className="pp-booking-actions">
                 <span className="pp-tag pp-tag-ready pp-booking-date">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>
-                <div className="pp-secondary-actions"><h3>Weitere Aktionen</h3>
-                    <button className="pp-secondary pp-report-button" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button>
-                    <button className="pp-secondary pp-cancel-button" onClick={() => open('cancel', booking)}>Fach kündigen</button>
-                </div>
+                <div className="pp-secondary-actions"><BookingActions hasProblem={Boolean(problems[booking.id])} onProblem={() => open('problem', booking)} onCancel={() => open('cancel', booking)} /></div>
             </div>
         </article>)}</div>
         {!current.length && <p className="pp-compact-empty">Keine laufende Buchung.</p>}
