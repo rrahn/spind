@@ -59,9 +59,7 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
                 <span className="pp-locker-handle" aria-hidden="true" />
             </div>
             <div className="pp-compact-info">
-                <div className="pp-booking-title-row"><h2 className="pp-booking-child-name">{childName(booking)}</h2>
-                    <span className="pp-tag pp-tag-ready">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>
-                </div>
+                <h2 className="pp-booking-child-name">{childName(booking)}</h2>
                 {problems[booking.id] && <div className="pp-booking-badges"><span className="pp-tag pp-problem-tag">Problem gemeldet · Offen</span></div>}
                 <dl className="pp-booking-meta">
                     <BookingField caption="Buchungszeitraum">Schuljahr {booking.year}</BookingField>
@@ -70,6 +68,7 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
                 </dl>
             </div>
             <div className="pp-booking-actions">
+                <span className="pp-tag pp-tag-ready pp-booking-date">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>
                 <div className="pp-secondary-actions"><h3>Weitere Aktionen</h3>
                     <button className="pp-secondary pp-report-button" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button>
                     <button className="pp-secondary pp-cancel-button" onClick={() => open('cancel', booking)}>Fach kündigen</button>
