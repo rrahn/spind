@@ -8,10 +8,12 @@
 .pp-locker-handle { width: 5px; height: 17px; background: #17364a; border-radius: 3px; position: absolute; right: 8px; top: 40%; }
 .pp-locker-center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; width: 100%; }
 .pp-small-locker button { border: 0; border-radius: 5px; background: #fffefa; color: #276d68; font-size: 10px; font-weight: 650; padding: 8px 5px; width: 100%; }
-.pp-booking-child-name { font-size: 22px; margin-bottom: 10px !important; overflow-wrap: anywhere; }
+.pp-booking-title-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
+.pp-booking-child-name { font-size: 22px; overflow-wrap: anywhere; }
+.pp-booking-title-row > .pp-tag { flex-shrink: 0; }
 .pp-rearranged-booking .pp-booking-meta { margin-bottom: 0; }
 .pp-location-field { grid-column: 1 / -1; }
-.pp-booking-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.pp-booking-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .pp-booking-meta { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin: 18px 0 14px; }
 .pp-booking-meta dt { color: var(--pp-muted); font-size: 11px; margin-bottom: 5px; }
 .pp-booking-meta dd { margin: 0; font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
@@ -20,7 +22,11 @@
 .pp-booking-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 20px; }
 .pp-secondary-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .pp-compact-booking .pp-secondary { font-size: 12px; padding: 10px 13px; }
-.pp-danger-text { color: #9b4036; }
+.pp-secondary-actions h3 { font-size: 11px; font-weight: 600; color: var(--pp-muted); }
+.pp-compact-booking .pp-report-button { color: #805119; border-color: #d5a15d; background: #fff7e9; }
+.pp-compact-booking .pp-report-button:hover { background: #fae4bd; }
+.pp-compact-booking .pp-cancel-button { color: #9b4036; border-color: #d9a69e; background: #fff2ee; }
+.pp-compact-booking .pp-cancel-button:hover { background: #fbe2db; }
 .pp-has-problem .pp-small-locker { background: #fae4bd; border-color: #d5a15d; }
 .pp-problem-tag { background: #fae4bd; color: #805119; }
 .pp-compact-empty { padding: 20px 0; font-size: 13px; }

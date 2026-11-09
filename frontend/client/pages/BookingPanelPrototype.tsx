@@ -59,8 +59,10 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
                 <span className="pp-locker-handle" aria-hidden="true" />
             </div>
             <div className="pp-compact-info">
-                <h2 className="pp-booking-child-name">{childName(booking)}</h2>
-                <div className="pp-booking-badges"><span className="pp-tag pp-tag-ready">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>{problems[booking.id] && <span className="pp-tag pp-problem-tag">Problem gemeldet · Offen</span>}</div>
+                <div className="pp-booking-title-row"><h2 className="pp-booking-child-name">{childName(booking)}</h2>
+                    <span className="pp-tag pp-tag-ready">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>
+                </div>
+                {problems[booking.id] && <div className="pp-booking-badges"><span className="pp-tag pp-problem-tag">Problem gemeldet · Offen</span></div>}
                 <dl className="pp-booking-meta">
                     <BookingField caption="Buchungszeitraum">Schuljahr {booking.year}</BookingField>
                     <BookingField caption="Klassenraum">{children.find(child => child.id === booking.childId)?.room || 'Noch nicht zugeordnet'}</BookingField>
@@ -68,8 +70,9 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
                 </dl>
             </div>
             <div className="pp-booking-actions">
-                <div className="pp-secondary-actions"><button className="pp-secondary" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button>
-                    <button className="pp-text pp-danger-text" onClick={() => open('cancel', booking)}>Schrank kündigen</button>
+                <div className="pp-secondary-actions"><h3>Weitere Aktionen</h3>
+                    <button className="pp-secondary pp-report-button" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button>
+                    <button className="pp-secondary pp-cancel-button" onClick={() => open('cancel', booking)}>Fach kündigen</button>
                 </div>
             </div>
         </article>)}</div>
