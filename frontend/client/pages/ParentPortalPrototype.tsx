@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import './ParentPortalPrototype.css';
+import BookingPanelPrototype from './BookingPanelPrototype';
 
 type Child = { id: number; name: string; className: string; room: string; locker?: string };
 type Variant = 'A' | 'B' | 'C';
@@ -14,7 +15,7 @@ const examples: Child[] = [
     { id: 1, name: 'Mila Beispiel', className: '8N', room: '204', locker: 'B-024' },
     { id: 2, name: 'Jonas Beispiel', className: '5A', room: '108' },
 ];
-const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Jahresübersicht', C: 'Kinderverwaltung & Schließfächer' };
+const names: Record<Variant, string> = { A: 'Kinder im Mittelpunkt', B: 'Kompakte Buchungen & Aktionen', C: 'Kinderverwaltung & Schließfächer' };
 
 function LockerIllustration() {
     return <svg viewBox="0 0 420 380" role="img" aria-label="Frontalansicht einer Schließfachanlage mit sechs gleichmäßig angeordneten Türen">
@@ -82,7 +83,7 @@ export default function ParentPortalPrototype() {
     }
     useEffect(() => {
         function onKey(event: KeyboardEvent) {
-            if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, button, [contenteditable]')) return;
+            if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, button, dialog, [contenteditable]')) return;
             if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 event.preventDefault();
                 cycle(event.key === 'ArrowLeft' ? -1 : 1);
@@ -144,11 +145,7 @@ export default function ParentPortalPrototype() {
                     <section className="pp-review"><span aria-hidden="true">✦</span><div><strong>{reviewed ? 'Klassenangaben geprüft' : 'Bereit für das neue Schuljahr?'}</strong><p>{reviewed ? 'Nur in dieser Vorschau bestätigt.' : 'Bitte prüfe die vorgeschlagenen Klassen deiner Kinder.'}</p></div><button className="pp-secondary" onClick={() => { setReviewed(true); setMessage('Klassenprüfung in der Vorschau bestätigt. Automatische Fortschreibung gehört zum separaten Backend-Sprint.'); }}>{reviewed ? 'Erneut prüfen' : 'Angaben prüfen'}</button></section>
                     <section><div className="pp-section-heading"><h2>{historical ? 'Vergangene Buchungen' : 'Meine Kinder'} <small>{children.length}</small></h2>{addButton}</div><div className="pp-card-grid">{historical ? history : children.length ? cards : empty}</div></section>{!historical && archive}
                 </>}
-                {variant === 'B' && <>
-                    <section className="pp-welcome"><div><span className="pp-eyebrow">ALLES FÜR DIESES SCHULJAHR</span><h1>Deine Buchungsübersicht.</h1><p>Ein Jahr. Alle Kinder. Alles im Blick.</p></div>{yearControl}</section>
-                    <div className="pp-year-layout"><section className="pp-year-summary"><span className="pp-eyebrow">SCHULJAHR {year}</span><h2>{historical ? 'Ein Blick zurück.' : `${children.filter(child => child.locker).length} Schließfach schon gebucht.`}</h2><p>{historical ? 'Hier bleiben vergangene Buchungen sichtbar.' : 'Wähle ein Kind aus, um seine Buchung anzusehen oder ein neues Fach zu finden.'}</p>{addButton}<LockerIllustration /></section><section className="pp-roster"><h2>Kinder & Buchungen</h2>{historical ? history : children.length ? children.map(child => <article key={child.id} className="pp-roster-row"><span className="pp-avatar">{child.name[0]}</span><div><h3>{child.name}</h3><p>{child.className} · Raum {child.room}</p></div><span className="pp-tag">{child.locker || 'Noch offen'}</span><button className="pp-secondary" onClick={() => setMessage(`${child.name}: ${child.locker ? 'Buchungsdetails' : 'Schließfachauswahl'} ist nur eine Vorschau.`)}>{child.locker ? 'Ansehen' : 'Buchen'}</button></article>) : empty}{!historical && archive}</section></div>
-                </>}
-                {variant === 'C' && <div className="pp-management-layout">
+                {(variant === 'B' || variant === 'C') && <div className="pp-management-layout">
                     <aside className="pp-management-sidebar" aria-labelledby="pp-children-heading">
                         <div className="pp-section-heading"><h2 id="pp-children-heading">Meine Kinder</h2><span className="pp-count">{children.length}</span></div>
                         <div className="pp-profile-list">{children.map(child => <article key={child.id} className="pp-profile">
@@ -158,7 +155,7 @@ export default function ParentPortalPrototype() {
                         {!children.length && <p className="pp-profile-empty">Noch keine Kinder registriert.</p>}
                         {addButton}
                     </aside>
-                    <section className="pp-booking-panel" aria-labelledby="pp-bookings-heading">
+                    {variant === 'B' ? <BookingPanelPrototype children={children} bookings={exampleBookings} bookingOpen={bookingOpen} /> : <section className="pp-booking-panel" aria-labelledby="pp-bookings-heading">
                         <div className="pp-section-heading"><h1 id="pp-bookings-heading">Meine Schließfächer</h1><span className="pp-count">{currentBookings.length} gebucht</span></div>
                         <div className="pp-locker-bookings">{currentBookings.map(booking => <article className="pp-locker-booking" key={booking.id}>
                             <div className="pp-locker-visual" aria-hidden="true"><span /><strong>{booking.locker}</strong><i /></div>
@@ -170,14 +167,14 @@ export default function ParentPortalPrototype() {
                         </section>
                         {choosingChild && bookingOpen && eligibleChildren.length > 0 && <form className="pp-booking-choice" onSubmit={event => { event.preventDefault(); const child = eligibleChildren.find(candidate => String(candidate.id) === selectedChild); if (child) setMessage(`Vorschau: Schließfachauswahl für ${child.name}. Es wird keine echte Buchung erstellt.`); }}><label>Kind für die Buchung<select required value={eligibleChildren.some(child => String(child.id) === selectedChild) ? selectedChild : ''} onChange={event => setSelectedChild(event.target.value)}><option value="" disabled>Kind auswählen</option>{eligibleChildren.map(child => <option value={child.id} key={child.id}>{child.name}</option>)}</select></label><button className="pp-primary">Zur Schließfachauswahl</button><button type="button" className="pp-text" onClick={() => setChoosingChild(false)}>Abbrechen</button></form>}
                         <section className="pp-booking-history"><h2>Ältere Buchungen</h2>{oldBookings.map(booking => <article key={booking.id}><div><strong>Schließfach {booking.locker}</strong><p>{booking.childName} · Schuljahr {booking.year}</p></div><span className="pp-tag">Beendet</span></article>)}</section>
-                    </section>
+                    </section>}
                 </div>}
-                {variant === 'C' && <div className="pp-demo-controls"><span>Nur Vorschau · Admin-Freigabe simulieren: </span><button className="pp-text" onClick={() => { setBookingOpen(!bookingOpen); setChoosingChild(false); }}>{bookingOpen ? 'Buchung schließen' : 'Buchung freigeben'}</button></div>}
+                {(variant === 'B' || variant === 'C') && <div className="pp-demo-controls"><span>Nur Vorschau · Admin-Freigabe simulieren: </span><button className="pp-text" onClick={() => { setBookingOpen(!bookingOpen); setChoosingChild(false); }}>{bookingOpen ? 'Buchung schließen' : 'Buchung freigeben'}</button></div>}
                 <div className="pp-demo-controls"><button className="pp-text" onClick={() => { setChildren(children.length ? [] : examples); setMessage('Beispielzustand geändert; keine echten Daten betroffen.'); }}>{children.length ? 'Leere Familie testen' : 'Beispielkinder laden'}</button></div>
                 {message && <p className="pp-notice" role="status">{message}</p>}
                 {adding && <section className="pp-add-child" aria-labelledby="pp-add-title"><h2 id="pp-add-title">{editingChild !== null ? 'Vorschau-Kind bearbeiten' : 'Vorschau-Kind hinzufügen'}</h2><form onSubmit={addChild}><label>Name<input required value={childName} onChange={event => setChildName(event.target.value)} placeholder="Nur einen erfundenen Namen verwenden" /></label><label>Klasse<select value={childClass} onChange={event => setChildClass(event.target.value)}><option>5A</option><option>7N</option><option>8N</option></select></label><div><button className="pp-primary" disabled={!childName.trim()}>{editingChild !== null ? 'Änderungen übernehmen' : 'Zur Vorschau hinzufügen'}</button><button type="button" className="pp-text" onClick={() => setAdding(false)}>Abbrechen</button></div></form></section>}
             </main>
         </>}
-        {process.env.NODE_ENV !== 'production' && <aside className="pp-switcher" aria-label="Designvarianten"><button aria-label="Vorherige Variante" onClick={() => cycle(-1)}>←</button><div><strong>{variant} · {names[variant]}</strong><small>{dashboard ? `${children.length} Beispielkinder · ${variant === 'C' ? 'separate Buchungen' : `Jahr ${year}`} · nur im Speicher` : 'Login / Registrierung · keine Authentifizierung'}</small></div><button aria-label="Nächste Variante" onClick={() => cycle(1)}>→</button></aside>}
+        {process.env.NODE_ENV !== 'production' && <aside className="pp-switcher" aria-label="Designvarianten"><button aria-label="Vorherige Variante" onClick={() => cycle(-1)}>←</button><div><strong>{variant} · {names[variant]}</strong><small>{dashboard ? `${children.length} Beispielkinder · ${variant !== 'A' ? 'separate Buchungen' : `Jahr ${year}`} · nur im Speicher` : 'Login / Registrierung · keine Authentifizierung'}</small></div><button aria-label="Nächste Variante" onClick={() => cycle(1)}>→</button></aside>}
     </div>;
 }
