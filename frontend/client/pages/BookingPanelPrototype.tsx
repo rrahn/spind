@@ -46,7 +46,7 @@ function BookingActions({ hasProblem, onProblem, onCancel }: { hasProblem: boole
     }} onBlur={event => {
         if (!event.currentTarget.contains(event.relatedTarget)) disclosure.current?.removeAttribute('open');
     }}>
-        <summary><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>Weitere Aktionen</summary>
+        <summary>Weitere Aktionen<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></summary>
         <div className="pp-action-dropdown">
             <button onClick={() => select(onProblem)}>{hasProblem ? 'Problem ansehen' : 'Problem melden'}</button>
             <button className="pp-action-cancel" onClick={() => select(onCancel)}>Fach kündigen</button>

@@ -25,9 +25,10 @@
 .pp-secondary-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 .pp-compact-booking .pp-secondary { font-size: 12px; padding: 10px 13px; }
 .pp-action-disclosure { position: relative; }
-.pp-action-disclosure summary { display: flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; font-size: 12px; padding: 10px 12px; border: 1px solid #ccd9d2; border-radius: 8px; background: #fffefa; color: var(--pp-navy); }
+.pp-action-disclosure summary { display: flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; font-size: 12px; padding: 12px 0; color: var(--pp-teal); }
 .pp-action-disclosure summary::-webkit-details-marker { display: none; }
-.pp-action-disclosure summary:hover { background: #edf3ed; }
+.pp-action-disclosure summary:hover { color: #1d5652; text-decoration: underline; text-underline-offset: 4px; }
+.pp-action-disclosure[open] summary svg { transform: rotate(180deg); }
 .pp-action-dropdown { position: absolute; right: 0; top: calc(100% + 6px); width: 100%; min-width: 170px; padding: 5px; border: 1px solid #ccd9d2; border-radius: 10px; background: #fffefa; box-shadow: 0 8px 24px #17364a18; z-index: 5; }
 .pp-action-dropdown button { display: block; width: 100%; text-align: left; padding: 12px 10px; border: 0; border-radius: 6px; background: none; color: var(--pp-navy); font-size: 12px; }
 .pp-action-dropdown button:hover { background: #edf3ed; }
