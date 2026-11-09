@@ -64,4 +64,9 @@
 @media (max-width: 1050px) { .pp-compact-booking { grid-template-columns: 100px minmax(0, 1fr); gap: 18px; } .pp-booking-actions { grid-column: 2; gap: 12px; } .pp-secondary-actions { margin-top: 0; } .pp-small-locker { align-self: start; aspect-ratio: 1 / 2; } }
 @media (max-width: 850px) { .pp-variant-B .pp-management-layout { grid-template-columns: 220px minmax(0, 1fr); gap: 22px; } .pp-compact-booking { grid-template-columns: 90px minmax(0, 1fr); gap: 16px; padding: 16px; } .pp-booking-meta { grid-template-columns: minmax(0, 1fr); gap: 10px; } .pp-booking-meta dd { font-size: 16px; } }
 @media (max-width: 650px) { .pp-variant-B .pp-management-layout { grid-template-columns: minmax(0, 1fr); } .pp-variant-B .pp-profile-list { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); } .pp-variant-B .pp-header nav { flex-wrap: wrap; gap: 12px; } .pp-variant-B .pp-switcher { width: calc(100vw - 24px); gap: 10px; } .pp-variant-B .pp-switcher > div { min-width: 0; } .pp-variant-B .pp-switcher strong { font-size: 10px; } }
-@media (max-width: 400px) { .pp-compact-booking { grid-template-columns: 80px minmax(0, 1fr); gap: 12px; padding: 12px; } .pp-booking-actions { gap: 6px; } .pp-small-locker strong { font-size: 16px; } .pp-booking-dialog { padding: 18px; } .pp-code { font-size: 28px; letter-spacing: 3px; padding: 15px; } }
+@media (max-width: 650px) {
+    .pp-compact-booking { grid-template-columns: minmax(0, 1fr); }
+    .pp-small-locker { width: 112px; aspect-ratio: 2 / 3; }
+    .pp-booking-actions { grid-column: auto; }
+}
+@media (max-width: 400px) { .pp-compact-booking { gap: 12px; padding: 12px; } .pp-booking-actions { gap: 6px; } .pp-small-locker strong { font-size: 16px; } .pp-booking-dialog { padding: 18px; } .pp-code { font-size: 28px; letter-spacing: 3px; padding: 15px; } }
