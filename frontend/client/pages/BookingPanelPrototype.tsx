@@ -30,6 +30,7 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
     const [regenerating, setRegenerating] = useState(false);
     const [problem, setProblem] = useState('Schloss defekt');
     const [message, setMessage] = useState('');
+    const [codeOnLocker, setCodeOnLocker] = useState(false);
     const dialog = useRef<HTMLDialogElement>(null);
     const current = bookings.filter(booking => !booking.ended && !cancelled.includes(booking.id));
     const history = [...bookings.filter(booking => booking.ended || cancelled.includes(booking.id)), ...archiveExamples];
@@ -50,22 +51,29 @@ export default function BookingPanelPrototype({ children, bookings, bookingOpen 
 
     return <section className="pp-booking-panel pp-compact-panel" aria-labelledby="pp-bookings-heading">
         <div className="pp-section-heading"><h1 id="pp-bookings-heading">Meine Schließfächer</h1><span className="pp-count">{current.length} gebucht</span></div>
-        <div className="pp-locker-bookings">{current.map(booking => <article className={`pp-compact-booking ${problems[booking.id] ? 'pp-has-problem' : ''}`} key={booking.id}>
+        <div className="pp-layout-choice" role="group" aria-label="Vorschau: Position des Code-Buttons"><span>Nur Vorschau · Code-Button:</span><button className="pp-secondary" aria-pressed={!codeOnLocker} onClick={() => setCodeOnLocker(false)}>Rechts</button><button className="pp-secondary" aria-pressed={codeOnLocker} onClick={() => setCodeOnLocker(true)}>Im Spind</button></div>
+        <div className="pp-locker-bookings">{current.map(booking => <article className={`pp-compact-booking pp-rearranged-booking ${codeOnLocker ? 'pp-code-on-locker' : ''} ${problems[booking.id] ? 'pp-has-problem' : ''}`} key={booking.id}>
             <div className="pp-small-locker">
                 <span className="pp-locker-vents" aria-hidden="true" />
-                <strong>{booking.locker}</strong>
+                <div className="pp-locker-center"><strong>{booking.locker}</strong>
+                    {codeOnLocker && <button onClick={() => open('code', booking)}>Code anzeigen</button>}
+                </div>
                 <span className="pp-locker-handle" aria-hidden="true" />
-                <button onClick={() => open('code', booking)}>Code anzeigen</button>
             </div>
             <div className="pp-compact-info">
+                <h2 className="pp-booking-child-name">{childName(booking)}</h2>
                 <div className="pp-booking-badges"><span className="pp-tag pp-tag-ready">Gebucht am <time dateTime="2027-08-12">12.08.2027</time></span>{problems[booking.id] && <span className="pp-tag pp-problem-tag">Problem gemeldet · Offen</span>}</div>
                 <dl className="pp-booking-meta">
-                    <BookingField caption="Kind">{childName(booking)}</BookingField>
                     <BookingField caption="Buchungszeitraum">Schuljahr {booking.year}</BookingField>
-                    <BookingField caption="Ort"><span className="pp-location"><span>{booking.location}</span><button className="pp-map-button" aria-label="Ort auf Schulkarte anzeigen" onClick={() => open('map', booking)}><MapIcon /></button></span></BookingField>
                     <BookingField caption="Klassenraum">{children.find(child => child.id === booking.childId)?.room || 'Noch nicht zugeordnet'}</BookingField>
+                    <div className="pp-location-field"><dt>Ort</dt><dd><span className="pp-location"><span>{booking.location}</span><button className="pp-map-button" aria-label="Ort auf Schulkarte anzeigen" onClick={() => open('map', booking)}><MapIcon /></button></span></dd></div>
                 </dl>
-                <div className="pp-booking-actions"><button className="pp-secondary" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button><button className="pp-text pp-danger-text" onClick={() => open('cancel', booking)}>Vorzeitig kündigen</button></div>
+            </div>
+            <div className="pp-booking-actions">
+                {!codeOnLocker && <button className="pp-primary" onClick={() => open('code', booking)}>Code anzeigen</button>}
+                <div className="pp-secondary-actions"><button className="pp-secondary" onClick={() => open('problem', booking)}>{problems[booking.id] ? 'Problem ansehen' : 'Problem melden'}</button>
+                    <details className="pp-more-actions"><summary>Weitere Aktionen</summary><button className="pp-text pp-danger-text" onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); open('cancel', booking); }}>Vorzeitig kündigen</button></details>
+                </div>
             </div>
         </article>)}</div>
         {!current.length && <p className="pp-compact-empty">Keine laufende Buchung.</p>}
