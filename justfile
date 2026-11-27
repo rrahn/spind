@@ -1,6 +1,6 @@
 # Spind monorepo task runner.
 # Wraps the existing backend (uv) and frontend (yarn) commands so every
-# workflow runs via `just`. Placeholder recipes are filled in by later epics.
+# workflow runs via `just`.
 
 set shell := ["bash", "-cu"]
 
@@ -16,7 +16,7 @@ default:
 
 # Create a local .env from the template if it does not exist.
 env:
-    test -f .env || cp .env.example .env
+    python3 {{backend_dir}}/locker_tools/local_env.py
 
 # Install backend and frontend dependencies.
 install:
@@ -31,9 +31,13 @@ dev:
 build:
     cd {{frontend_dir}} && yarn build
 
-# Run the backend test suite.
+# Run the full Python suite against the Compose PostgreSQL database.
 test:
-    cd {{backend_dir}} && uv run pytest
+    docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml exec -T backend uv run --no-sync pytest
+
+# Run the existing importer/assignment tests without a database.
+test-tools:
+    cd {{backend_dir}} && uv run pytest --ignore=tests/web
 
 # Lint the backend (ruff) and the frontend (eslint).
 lint:
@@ -41,23 +45,35 @@ lint:
     cd {{frontend_dir}} && yarn eslint .
 
 # Start the local stack via docker compose.
-up:
-    cd {{frontend_dir}} && docker compose up -d
+up: env
+    env -u DJANGO_SECRET_KEY docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml up --build --wait --wait-timeout 600
+    @echo "Locker app: http://localhost:3000"
+    @echo "Python API: http://localhost:8000/api/docs"
+    @echo "Local email inbox: http://localhost:8025"
 
 # Stop the local stack.
 down:
-    cd {{frontend_dir}} && docker compose down
+    docker compose -f {{frontend_dir}}/docker-compose.yml down
 
-# --- placeholders, implemented by the epic noted in each message ---
+# Follow application and database logs.
+logs:
+    docker compose -f {{frontend_dir}}/docker-compose.yml logs --follow
+
+# Show container health and published ports.
+status:
+    docker compose -f {{frontend_dir}}/docker-compose.yml ps
 
 test-pg:
-    @echo "not yet - Postgres concurrency test suite (E8, #31)"
+    docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml exec -T backend uv run --no-sync pytest tests/web
 
 api-test:
-    @echo "not yet - API tests (E4, #27)"
+    just test-pg
 
 migrate:
-    @echo "not yet - Alembic migrations (E1, #24)"
+    docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml exec -T backend uv run --no-sync locker-web migrate --noinput
+
+createsuperuser:
+    docker compose --env-file .env -f {{frontend_dir}}/docker-compose.yml exec backend uv run --no-sync locker-web createsuperuser
 
 deploy:
     @echo "not yet - production deployment (E13, #36)"

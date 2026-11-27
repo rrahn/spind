@@ -11,14 +11,18 @@ class _Entry(BaseModel):
     """A single locker (Fach) parsed from the database together with its state.
 
     ``occupied`` mirrors the ``Besetzt`` column (the ground truth for whether a
-    locker is taken) and ``defect`` mirrors the ``Defekt`` column.
+    locker is taken) and ``defect`` mirrors the ``Defekt`` column. ``floor``
+    mirrors ``Etage`` and ``issuable_keys`` mirrors ``Anzahl herausgebbarer
+    Schlüssel`` (``None`` when the column is absent).
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
     locker: Locker
+    floor: str
     occupied: bool
     defect: bool
+    issuable_keys: int | None
 
 
 class LockerManager:
@@ -27,7 +31,9 @@ class LockerManager:
     Decouples the rest of the tooling from the CSV row layout: it parses the
     locker database once and answers questions about which lockers are free.
     A locker is *available* when it is neither occupied (``Besetzt``) nor
-    defect (``Defekt``).
+    defect (``Defekt``), and has more than one issuable key (``Anzahl
+    herausgebbarer Schlüssel``); a single or missing key means it cannot be
+    handed out with a spare.
     """
 
     class _Column(IntEnum):
@@ -36,6 +42,11 @@ class LockerManager:
         FACH = 2
         BESETZT = 3
         DEFEKT = 4
+        NUMMER = 5
+        ORIGINAL_SCHLUESSEL = 6
+        ANZAHL_KOPIEN = 7
+        ANZAHL_HERAUSGEBBARER_SCHLUESSEL = 8
+        ANZAHL_SCHLUESSEL_GESAMT = 9
 
     _REQUIRED_COLUMNS = (_Column.ETAGE, _Column.SPIND, _Column.FACH)
 
@@ -93,13 +104,35 @@ class LockerManager:
             locker = Locker(int(row[column.SPIND]), int(row[column.FACH]))
             occupied = row[column.BESETZT] not in ('', '0') if len(row) > column.BESETZT else False
             defect = row[column.DEFEKT] != '' if len(row) > column.DEFEKT else False
-            entries.append(_Entry(locker=locker, occupied=occupied, defect=defect))
+            keys_col = column.ANZAHL_HERAUSGEBBARER_SCHLUESSEL
+            issuable_keys = (
+                int(row[keys_col]) if len(row) > keys_col and row[keys_col] != '' else None
+            )
+            entries.append(_Entry(locker=locker, floor=row[column.ETAGE], occupied=occupied,
+                                  defect=defect, issuable_keys=issuable_keys))
 
         return cls(entries)
 
+    @staticmethod
+    def _is_available(entry: _Entry) -> bool:
+        has_spare_key = entry.issuable_keys is None or entry.issuable_keys > 1
+        return not entry.occupied and not entry.defect and has_spare_key
+
     def available_lockers(self) -> list[Locker]:
-        """Return the free, non-defect lockers in database (file) order."""
-        return [entry.locker for entry in self._entries if not entry.occupied and not entry.defect]
+        """Return the available lockers in database (file) order."""
+        return [entry.locker for entry in self._entries if self._is_available(entry)]
+
+    def available_lockers_by_floor(self) -> dict[str, list[Locker]]:
+        """Return the available lockers grouped by floor (``Etage``).
+
+        Floors keep the order of their first appearance in the database;
+        lockers within a floor keep database (file) order.
+        """
+        grouped: dict[str, list[Locker]] = {}
+        for entry in self._entries:
+            if self._is_available(entry):
+                grouped.setdefault(entry.floor, []).append(entry.locker)
+        return grouped
 
     def num_available(self) -> int:
         """Return the number of available lockers."""

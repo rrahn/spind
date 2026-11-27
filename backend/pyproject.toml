@@ -12,10 +12,16 @@ dependencies = [
     "pydantic>=2",
     "openpyxl>=3.1.5",
     "jinja2>=3",
+    "django>=5.2,<5.3",
+    "django-ninja>=1.4,<2",
+    "django-allauth[headless]>=65,<66",
+    "psycopg[binary]>=3.2,<4",
+    "cryptography>=46,<47",
 ]
 
 [project.scripts]
 locker-tools = "locker_tools.main:cli"
+locker-web = "locker_tools.web.manage:main"
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -30,4 +36,9 @@ locker_tools = ["templates/*.j2"]
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "pytest-django>=4.11,<5",
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "locker_tools.web.settings_test"
+testpaths = ["tests"]

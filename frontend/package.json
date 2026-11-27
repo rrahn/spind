@@ -6,6 +6,7 @@
   "scripts": {
     "prettify": "prettier -l --write \"**/*.js\"",
     "test": "jest",
+    "test:ras": "node --test server/tests/rasSimulator.test.cjs",
     "dev": "yarn run storybook & yarn run server-dev",
     "build": "webpack --mode production",
     "storybook": "storybook dev -p 6006 --disable-telemetry",
