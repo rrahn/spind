@@ -21,6 +21,12 @@
 .pp-root form label { display: block; font-size: 13px; font-weight: 600; margin: 18px 0; }
 .pp-root input, .pp-root select { border: 1px solid #cdd9d4; border-radius: 10px; padding: 13px; background: #fffefa; color: var(--pp-navy); }
 .pp-root form input { display: block; width: 100%; margin-top: 8px; font-size: 13px; }
+.pp-root form .pp-password-label { margin-bottom: 8px; }
+.pp-password-field { position: relative; }
+.pp-root form .pp-password-field input { margin-top: 0; padding-right: 56px; }
+.pp-password-toggle { position: absolute; top: 0; right: 0; bottom: 0; width: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: transparent; color: var(--pp-teal); }
+.pp-password-toggle:hover { color: #1d5652; }
+.pp-password-toggle svg { width: 20px; height: 20px; }
 .pp-primary, .pp-secondary { padding: 13px 19px; border-radius: 10px; border: 1px solid transparent; font-size: 13px; font-weight: 650; display: inline-flex; align-items: center; justify-content: center; gap: 14px; }
 .pp-primary { background: var(--pp-teal); color: white; }
 .pp-primary:hover { background: #1d5652; }
