@@ -42,10 +42,17 @@ export default function RegisterPage() {
             <FieldError id="last_name-error" message={errors.last_name} />
             <label>E-Mail-Adresse<input name="email" type="email" autoComplete="email" required placeholder="name@beispiel.de" value={form.email} onChange={update('email')} aria-invalid={!!errors.email} aria-describedby={described('email')} /></label>
             <FieldError id="email-error" message={errors.email} />
-            <label>Passwort
-                <input name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={update('password')} aria-invalid={!!errors.password} aria-describedby={`password-hint${errors.password ? ' password-error' : ''}`} />
-            </label>
-            <button type="button" className="pp-text" onClick={() => setShowPassword(!showPassword)} aria-pressed={showPassword}>{showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}</button>
+            <label className="pp-password-label" htmlFor="registration-password">Passwort</label>
+            <div className="pp-password-field">
+                <input id="registration-password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} value={form.password} onChange={update('password')} aria-invalid={!!errors.password} aria-describedby={`password-hint${errors.password ? ' password-error' : ''}`} />
+                <button type="button" className="pp-password-toggle" onClick={() => setShowPassword(current => !current)} aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'} title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        {showPassword
+                            ? <path d="M3 10c2.3 2.7 5.3 4 9 4s6.7-1.3 9-4M5 12l-1.5 2M9 13.5l-.5 2.5M15 13.5l.5 2.5M19 12l1.5 2" />
+                            : <><path d="M2.5 12C4.8 8.2 8 6 12 6s7.2 2.2 9.5 6c-2.3 3.8-5.5 6-9.5 6s-7.2-2.2-9.5-6Z" /><circle cx="12" cy="12" r="2.7" /></>}
+                    </svg>
+                </button>
+            </div>
             <p id="password-hint" className="pp-form-note">Mindestens {MIN_PASSWORD_LENGTH} Zeichen. Ein Satz aus mehreren Wörtern ist leicht zu merken und sicher. Ein Passwort-Manager hilft.</p>
             <FieldError id="password-error" message={errors.password} />
             <p className="pp-form-note">Wir speichern deinen Namen und deine E-Mail-Adresse, um dein Konto zu führen. Du bestätigst deine E-Mail-Adresse im nächsten Schritt mit einem Code.</p>
