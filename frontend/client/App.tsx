@@ -10,6 +10,9 @@ import FormPageLocker from './pages/FormPageLocker';
 import FormPagePayment from './pages/FormPagePayment';
 import FormPageSummary from './pages/FormPageSummary';
 import ParentPortalPrototype from './pages/ParentPortalPrototype';
+import RegisterPage from './pages/parent/RegisterPage';
+import VerifyEmailPage from './pages/parent/VerifyEmailPage';
+import AccountPage from './pages/parent/AccountPage';
 
 function ParentPreviewEntry() {
   const [params] = useSearchParams();
@@ -46,6 +49,9 @@ const router = createBrowserRouter([  // This is the router configuration
       }
       ],
   },
+  { path: "/registrieren", element: <RegisterPage />, errorElement: <ErrorPage /> },
+  { path: "/registrieren/bestaetigen", element: <VerifyEmailPage />, errorElement: <ErrorPage /> },
+  { path: "/konto", element: <AccountPage />, errorElement: <ErrorPage /> },
 ], {
   // basename: "/Schliessfaecher", // This is the base URL of the app.
 });

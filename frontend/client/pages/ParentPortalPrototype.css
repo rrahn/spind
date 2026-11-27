@@ -76,6 +76,10 @@
 .pp-empty { padding: 45px; border: 1px dashed #b8c9bd; border-radius: 16px; grid-column: 1 / -1; text-align: center; }
 .pp-empty p { margin: 12px 0 20px; }
 .pp-notice { background: #e7efe9; padding: 15px 20px; border-radius: 12px; margin-top: 20px !important; font-size: 12px; }
+.pp-root .pp-notice-error { background: #f8e3df; color: #7a2a1d; }
+.pp-field-error { display: block; color: #a3321f; font-size: 12px; margin: -10px 0 12px; }
+.pp-root input[aria-invalid="true"] { border-color: #a3321f; }
+.pp-root a.pp-primary { text-decoration: none; margin-top: 24px; }
 .pp-demo-controls { margin-top: 25px; }
 .pp-add-child { background: #fffefa; border: 1px solid #ccd9d2; border-radius: 16px; padding: 25px; margin-top: 25px; max-width: 500px; }
 .pp-add-child h2 { font-size: 22px; }

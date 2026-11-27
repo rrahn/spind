@@ -8,6 +8,7 @@ AUTH_USER_MODEL = "booking.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USE_TZ = True
 TIME_ZONE = "UTC"
+LANGUAGE_CODE = "de"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -53,24 +54,37 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+# Argon2id first (OWASP); older hashes are upgraded transparently on next login.
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+# NIST SP 800-63B rev. 4: >= 15 characters for single-factor passwords, no composition rules.
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 15}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*"]
+ACCOUNT_SIGNUP_FORM_CLASS = "locker_tools.web.booking.forms.GuardianSignupForm"
+ACCOUNT_USER_DISPLAY = lambda user: user.first_name or user.email
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# Codes are bound to the pending signup session, so a correct code logs that session in.
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+ACCOUNT_PREVENT_ENUMERATION = True
 ACCOUNT_UNIQUE_EMAIL = True
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ("browser",)
 FRONTEND_URL = os.environ.get("LOCKER_FRONTEND_URL", "http://localhost:3000").rstrip("/")
 HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": FRONTEND_URL + "/accounts/confirm-email/{key}",
+    "account_reset_password": FRONTEND_URL + "/passwort-vergessen",
     "account_reset_password_from_key": FRONTEND_URL + "/accounts/reset-password/{key}",
-    "account_signup": FRONTEND_URL + "/accounts/signup",
+    "account_signup": FRONTEND_URL + "/registrieren",
 }
 EMAIL_BACKEND = os.environ.get("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")

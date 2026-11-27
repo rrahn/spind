@@ -3,6 +3,7 @@ const http = require('http');
 const db = require('./models/database.js');
 const { Server } = require("socket.io");
 const { configuration, simulatorRouter } = require('./rasSimulator');
+const { mountDjangoProxy } = require('./djangoProxy');
 const simulatorConfig = configuration();
 
 // Middleware functions
@@ -43,11 +44,14 @@ const io = new Server(server, {
 
 // app.use(express.json()); // Enable JSON parsing for request bodies
 
+// Must precede body parsing so request streams reach Django untouched.
+mountDjangoProxy(app, process.env.DJANGO_URL || 'http://127.0.0.1:8000');
+
 /** In developer mode enable Hot Module Reloading via webpack-hot-middleware and webpack-dev-middleware */
 if (dev) {
-    app.use(require('./dev').webpackComp)
-    //    .use(require('./dev').apiFallback())
-    //    .use(require('./dev').webpackComp)
+    // Serve index.html for client-side routes such as /registrieren.
+    app.use(require('./dev').apiFallback())
+       .use(require('./dev').webpackComp)
        .use(require('./dev').webpackHot);
 }
 

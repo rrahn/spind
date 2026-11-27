@@ -125,18 +125,26 @@ Release through `POST /api/holds/{id}/release` with an empty object.
 
 ### Authentication and agents
 
-Use allauth's headless **browser** interface under `/_allauth/browser/v1/`:
+Use allauth's headless **browser** interface under `/_allauth/browser/v1/`. The
+React app reaches it **same-origin** through the Express proxy on port 3000
+([`djangoProxy.js`](../../frontend/server/djangoProxy.js)); the Django domain API
+is proxied as `/api/v1/*` → Django `/api/*` because legacy Express owns `/api/*`.
+See [ADR 0002](../adr/0002-parent-account-security.md) for the security baseline.
 
 1. `GET config` sets a CSRF cookie.
-2. `POST auth/signup` with `email` and `password` creates an unverified account
-   and sends an email. The resulting 401 indicates verification is still needed.
-3. `POST auth/email/verify` with `key` completes mailbox verification; its 401
-   response indicates that login is still required. Confirmation does not
-   automatically authenticate the account.
+2. `POST auth/signup` with `email`, `password`, `first_name` and `last_name`
+   creates an unverified account and emails a verification **code** (`XXXX-XXXX`).
+   The 401 response lists the pending `verify_email` flow. A signup for an existing
+   address returns the same response and only emails the existing owner
+   (enumeration protection).
+3. `POST auth/email/verify` with the code as `key` verifies the mailbox **and logs
+   in the pending signup session** (200). Codes only work in the browser session
+   that signed up; elsewhere they return 409. `POST auth/email/verify/resend`
+   sends a new code.
 4. `POST auth/login` authenticates with email/password.
 5. `POST auth/password/request` sends a reset email; `POST auth/password/reset`
    takes the reset `key` and new `password`.
-6. `DELETE auth/session` logs out.
+6. `DELETE auth/session` logs out; `GET auth/session` reads the current session.
 
 Retain cookies and send the `csrftoken` value as `X-CSRFToken` on unsafe requests
 to both APIs. Login rotates the CSRF token, so use the latest cookie. Scripts and
@@ -144,11 +152,11 @@ agents can use the same verified-account session flow; scoped machine tokens,
 delegation and independently audited agent permissions are not implemented.
 Email verification proves control of a mailbox, not guardianship.
 
-Development email is captured in Mailpit at `http://localhost:8025`; it is not
-sent to actual families. Verification/reset emails point at frontend paths that
-React has **not yet implemented**. The backend lifecycle can be exercised by
-extracting the key from the email and submitting it to the headless endpoint.
-Do not present these unfinished links as a completed parent-facing UX.
+Parent-facing React routes: `/registrieren` (signup), `/registrieren/bestaetigen`
+(code entry and resend) and `/konto` (signed-in landing). Login, logout and
+password-reset screens are not implemented yet; reset emails still point at
+unimplemented frontend paths. Development email is captured in Mailpit at
+`http://localhost:8025`; it is not sent to actual families.
 
 ## Local startup and validation
 
@@ -178,6 +186,9 @@ just createsuperuser  # Interactive staff account, no default credentials
 just migrate
 just test            # Existing Python tests plus real PostgreSQL API/concurrency tests
 just test-pg         # Only PostgreSQL-backed web tests
+just test-db         # Web tests on a fresh throwaway PostgreSQL (tmpfs, port 55432); args go to pytest
+just test-db-seed    # Keep a throwaway DB running with synthetic verified/unverified parents
+just test-db-down    # Discard the throwaway DB
 just test-tools      # Existing 43 importer/assignment tests, no database required
 just down            # Stops services; keeps database volumes
 ```
@@ -187,9 +198,10 @@ Re-run `just up` after changing Python code: this initial image does not bind-mo
 the host package/virtualenv. No synthetic inventory is seeded automatically.
 Create staff-managed reference data through the Python API before adding pupils.
 
-For host-side targeted tests, set `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`,
-`POSTGRES_DB` and `POSTGRES_PASSWORD` to a disposable PostgreSQL instance and run
-`uv run pytest tests/web` in the backend directory. Tests use a separate Django
+For host-side targeted tests, prefer `just test-db tests/web/test_accounts.py -k signup`:
+it needs only Docker and uv, not the compose stack. `just test-db-seed` stores
+synthetic accounts with production Argon2id hashing for manual login exploration
+and refuses to run outside debug/test settings. Tests use a separate Django
 test database; concurrency acceptance must not substitute SQLite. Test settings
 use an in-memory email backend and test-only configuration, never production
 credentials.
