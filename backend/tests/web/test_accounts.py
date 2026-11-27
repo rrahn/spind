@@ -27,13 +27,17 @@ def signup(client, email, password="Strong-synthetic-password-925!", **names):
     return send(client, "auth/signup", payload)
 
 
-CODE = re.compile(r"^\s*([A-Z0-9]{4}-[A-Z0-9]{4})\s*$", re.MULTILINE)
+CODE = re.compile(r"^\s*(\d{6})\s*$", re.MULTILINE)
 
 
 def verification_code(message):
     match = CODE.search(message.body)
     assert match, message.body
     return match.group(1)
+
+
+def wrong_code(code):
+    return "000000" if code != "000000" else "111111"
 
 
 def test_signup_stores_names_and_argon2id_hash_never_plaintext(settings):
@@ -57,7 +61,7 @@ def test_signup_code_verification_logs_in_pending_session():
     assert client.get("/api/pupils").status_code == 401
     assert len(mail.outbox) == 1
     code = verification_code(mail.outbox[0])
-    assert send(client, "auth/email/verify", {"key": "AAAA-AAAA"}).status_code == 400
+    assert send(client, "auth/email/verify", {"key": wrong_code(code)}).status_code == 400
     response = send(client, "auth/email/verify", {"key": code})
     assert response.status_code == 200
     assert response.json()["data"]["user"]["display"] == "Mila"
@@ -67,6 +71,17 @@ def test_signup_code_verification_logs_in_pending_session():
     assert client.get("/api/pupils").status_code == 401
     assert send(client, "auth/login", {"email": email, "password": "Strong-synthetic-password-925!"}).status_code == 200
     assert client.get("/api/pupils").status_code == 200
+
+
+def test_six_digit_code_is_invalidated_after_three_wrong_attempts():
+    client = Client(enforce_csrf_checks=True)
+    assert signup(client, "guess@example.invalid").status_code == 401
+    code = verification_code(mail.outbox[0])
+    statuses = [send(client, "auth/email/verify", {"key": wrong_code(code)}).status_code for _ in range(3)]
+    assert statuses[:2] == [400, 400]
+    assert send(client, "auth/email/verify", {"key": code}).status_code != 200
+    assert not EmailAddress.objects.get(email="guess@example.invalid").verified
+    assert client.get("/api/pupils").status_code == 401
 
 
 def test_code_from_another_session_cannot_verify_or_log_in():

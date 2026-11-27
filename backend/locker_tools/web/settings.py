@@ -74,6 +74,10 @@ ACCOUNT_USER_DISPLAY = lambda user: user.first_name or user.email
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # Codes are bound to the pending signup session, so a correct code logs that session in.
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+# 6 digits stay unguessable because a code dies after 3 wrong attempts or 15 minutes.
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_FORMAT = {"numeric": True, "length": 6, "dashed": False}
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_MAX_ATTEMPTS = 3
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT = 15 * 60
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 ACCOUNT_PREVENT_ENUMERATION = True
 ACCOUNT_UNIQUE_EMAIL = True

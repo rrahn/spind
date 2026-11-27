@@ -22,9 +22,10 @@ current guidance (OWASP Password Storage Cheat Sheet, NIST SP 800-63B rev. 4).
   rules and no forced rotation. Common, numeric and name/email-similar passwords
   are rejected. Lower the minimum to 8 only once MFA (passkeys/TOTP via
   `allauth.mfa`) is mandatory.
-- Email verification is mandatory and uses a short-lived **code** bound to the
-  signup session. Entering it logs that session in; a code used in another
-  browser is rejected.
+- Email verification is mandatory and uses a short-lived **6-digit code** bound
+  to the signup session. A code dies after 3 wrong attempts or 15 minutes, which
+  keeps 6 digits unguessable while staying easy to type on a phone. Entering it
+  logs that session in; a code used in another browser is rejected.
 - Account enumeration protection is on: duplicate signups look identical to new
   ones and only notify the existing owner.
 - allauth rate limits apply. Production needs a shared cache so limits hold

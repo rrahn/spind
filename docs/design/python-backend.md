@@ -133,7 +133,8 @@ See [ADR 0002](../adr/0002-parent-account-security.md) for the security baseline
 
 1. `GET config` sets a CSRF cookie.
 2. `POST auth/signup` with `email`, `password`, `first_name` and `last_name`
-   creates an unverified account and emails a verification **code** (`XXXX-XXXX`).
+   creates an unverified account and emails a 6-digit verification **code**
+   (3 attempts, valid for 15 minutes).
    The 401 response lists the pending `verify_email` flow. A signup for an existing
    address returns the same response and only emails the existing owner
    (enumeration protection).

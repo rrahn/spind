@@ -26,7 +26,7 @@ export default function VerifyEmailPage() {
         setSubmitting(true);
         setError(undefined);
         setNotice(undefined);
-        const response = await allauth.verifyEmail(code.trim().toUpperCase());
+        const response = await allauth.verifyEmail(code);
         setSubmitting(false);
         if (response.status === 200) navigate('/konto', { replace: true });
         else if (response.status === 409) setStage('expired');
@@ -49,8 +49,8 @@ export default function VerifyEmailPage() {
 
     return <AuthLayout eyebrow="E-MAIL BESTÄTIGEN" title="Fast geschafft." intro={<>Wir haben einen Bestätigungscode an {email ? <strong>{email}</strong> : 'deine E-Mail-Adresse'} geschickt. Gib ihn hier ein.</>}>
         <form onSubmit={submit}>
-            <label>Bestätigungscode
-                <input name="code" autoComplete="one-time-code" inputMode="text" autoCapitalize="characters" spellCheck={false} required maxLength={9} placeholder="XXXX-XXXX" value={code} onChange={event => setCode(event.target.value)} disabled={stage !== 'pending'} aria-invalid={!!error} aria-describedby={error ? 'code-error' : undefined} />
+            <label>6-stelliger Bestätigungscode
+                <input name="code" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" spellCheck={false} required placeholder="123456" value={code} onChange={event => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))} disabled={stage !== 'pending'} aria-invalid={!!error} aria-describedby={error ? 'code-error' : undefined} />
             </label>
             <FieldError id="code-error" message={error} />
             <button className="pp-primary" type="submit" disabled={submitting || stage !== 'pending'}>{submitting ? 'Wird geprüft …' : 'E-Mail bestätigen'} <span aria-hidden="true">→</span></button>
