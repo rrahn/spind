@@ -32,3 +32,10 @@ The parent-workspace `justfile` delegates to this project's tracked task runner.
 The existing React/Express/MySQL prototype includes an opt-in
 [RAS-inspired development simulator](docs/ras-simulator.md). It generates
 synthetic codes only and is not compatible with real locks.
+
+## Continuous integration
+
+GitHub Actions runs on pull requests and pushes to `main`. It runs the backend
+pytest suite against a temporary PostgreSQL database, the frontend proxy and
+simulator tests, and the frontend build. The simulator's optional MySQL
+integration test is skipped in CI. Browser signup tests are not yet automated.
